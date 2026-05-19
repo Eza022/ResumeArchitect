@@ -11,6 +11,13 @@ const require = createRequire(import.meta.url);
 
 dotenv.config();
 
+const geminiApiKey = process.env.GEMINI_API_KEY;
+if (!geminiApiKey || geminiApiKey === "MY_GEMINI_API_KEY") {
+  throw new Error(
+    "Missing or invalid GEMINI_API_KEY. Set a valid Gemini API key in your environment or .env file before running the server."
+  );
+}
+
 async function startServer() {
   const app = express();
   const PORT = 3000;
@@ -21,7 +28,7 @@ async function startServer() {
 
   // Gemini API setup
   const ai = new GoogleGenAI({
-    apiKey: process.env.GEMINI_API_KEY,
+    apiKey: geminiApiKey,
     httpOptions: {
       headers: {
         'User-Agent': 'aistudio-build',
@@ -45,12 +52,13 @@ async function startServer() {
       if (fileType === "application/pdf" || fileName.toLowerCase().endsWith(".pdf")) {
         try {
           console.log("Attempting local PDF extraction...");
-          const pdfParserRaw = require("pdf-parse");
-          const parsePdf = typeof pdfParserRaw === "function" ? pdfParserRaw : pdfParserRaw.default;
-          if (typeof parsePdf !== "function") {
-            throw new Error("Could not resolve pdf-parse system function.");
+          const { PDFParse } = require("pdf-parse");
+          if (!PDFParse) {
+            throw new Error("Could not resolve PDFParse from pdf-parse.");
           }
-          const data = await parsePdf(req.file.buffer);
+          const parser = new PDFParse({ data: req.file.buffer });
+          const data = await parser.getText();
+          await parser.destroy();
           text = data.text;
           console.log(`Local PDF extraction succeeded. Extracted ${text?.length || 0} characters.`);
         } catch (localPdfErr: any) {
