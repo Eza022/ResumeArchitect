@@ -3,12 +3,74 @@ import { motion, AnimatePresence } from 'motion/react';
 import { 
   FileText, Briefcase, Wand2, Copy, Check, Download, 
   AlertCircle, Loader2, Sparkles, User, Target, 
-  Mail, BarChart3, ChevronRight, Hash, XCircle, CheckCircle2, Upload
+  Mail, BarChart3, ChevronRight, Hash, XCircle, CheckCircle2, Upload,
+  MapPin, Phone, Globe, Linkedin, Github, Award, Languages, Palette, Layout, Type
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
+interface ContactInfo {
+  name: string;
+  title: string;
+  email: string;
+  phone: string;
+  location: string;
+  website?: string;
+  linkedin?: string;
+  github?: string;
+}
+
+interface WorkExperience {
+  role: string;
+  company: string;
+  location?: string;
+  period: string;
+  description: string[];
+}
+
+interface Education {
+  degree: string;
+  institution: string;
+  location?: string;
+  period: string;
+  details?: string;
+}
+
+interface SkillCategory {
+  category: string;
+  items: string[];
+}
+
+interface Project {
+  name: string;
+  description: string;
+  technologies: string[];
+  link?: string;
+}
+
+interface Reference {
+  name: string;
+  title?: string;
+  company?: string;
+  email?: string;
+  phone?: string;
+  relationship?: string;
+}
+
+
+interface TailoredResume {
+  contact: ContactInfo;
+  summary: string;
+  experience: WorkExperience[];
+  education: Education[];
+  skills: SkillCategory[];
+  projects: Project[];
+  languages?: string[];
+  certifications?: string[];
+  references?: Reference[];
+}
+
 interface ResumeData {
-  tailoredResume: string;
+  tailoredResume: TailoredResume;
   coverLetter: string;
   analysis: {
     matchScore: number;
@@ -17,6 +79,164 @@ interface ResumeData {
     keyImprovements: string;
   };
 }
+
+const COLOR_THEMES = {
+  indigo: {
+    name: 'Royal Indigo',
+    primary: '#4f46e5',
+    primaryText: 'text-indigo-600',
+    primaryBg: 'bg-indigo-600',
+    primaryBorder: 'border-indigo-600',
+    sidebarBg: '#f8fafc',
+    lightBg: 'bg-indigo-50/50',
+    lightText: 'text-indigo-700',
+    accentDot: 'bg-indigo-600',
+    iconColor: '#4f46e5',
+    hex: '#4f46e5'
+  },
+  emerald: {
+    name: 'Modern Emerald',
+    primary: '#059669',
+    primaryText: 'text-emerald-600',
+    primaryBg: 'bg-emerald-600',
+    primaryBorder: 'border-emerald-600',
+    sidebarBg: '#f4fbf7',
+    lightBg: 'bg-emerald-50/50',
+    lightText: 'text-emerald-700',
+    accentDot: 'bg-emerald-600',
+    iconColor: '#059669',
+    hex: '#059669'
+  },
+  slate: {
+    name: 'Slate Corporate',
+    primary: '#0f172a',
+    primaryText: 'text-slate-900',
+    primaryBg: 'bg-slate-900',
+    primaryBorder: 'border-slate-900',
+    sidebarBg: '#f8fafc',
+    lightBg: 'bg-slate-100/50',
+    lightText: 'text-slate-700',
+    accentDot: 'bg-slate-900',
+    iconColor: '#0f172a',
+    hex: '#0f172a'
+  },
+  amber: {
+    name: 'Warm Ochre',
+    primary: '#d97706',
+    primaryText: 'text-amber-600',
+    primaryBg: 'bg-amber-600',
+    primaryBorder: 'border-amber-600',
+    sidebarBg: '#fffbeb',
+    lightBg: 'bg-amber-50/50',
+    lightText: 'text-amber-700',
+    accentDot: 'bg-amber-600',
+    iconColor: '#d97706',
+    hex: '#d97706'
+  },
+  rose: {
+    name: 'Creative Rose',
+    primary: '#e11d48',
+    primaryText: 'text-rose-600',
+    primaryBg: 'bg-rose-600',
+    primaryBorder: 'border-rose-600',
+    sidebarBg: '#fff5f5',
+    lightBg: 'bg-rose-50/50',
+    lightText: 'text-rose-700',
+    accentDot: 'bg-rose-600',
+    iconColor: '#e11d48',
+    hex: '#e11d48'
+  }
+};
+
+const FONT_PAIRS = {
+  outfit: {
+    name: 'Outfit + Inter',
+    headerClass: 'font-display',
+    bodyClass: 'font-sans',
+    headerFamily: '"Outfit", sans-serif',
+    bodyFamily: '"Inter", sans-serif'
+  },
+  poppins: {
+    name: 'Poppins + Inter',
+    headerClass: 'font-poppins',
+    bodyClass: 'font-sans',
+    headerFamily: '"Poppins", sans-serif',
+    bodyFamily: '"Inter", sans-serif'
+  },
+  sans: {
+    name: 'Inter Minimalist',
+    headerClass: 'font-sans',
+    bodyClass: 'font-sans',
+    headerFamily: '"Inter", sans-serif',
+    bodyFamily: '"Inter", sans-serif'
+  }
+};
+
+const formatResumeToMarkdown = (resume: TailoredResume): string => {
+  let md = `# ${resume.contact.name}\n`;
+  md += `**${resume.contact.title}**\n\n`;
+  md += `✉️ ${resume.contact.email} | 📞 ${resume.contact.phone} | 📍 ${resume.contact.location}\n`;
+  
+  const links = [];
+  if (resume.contact.website) links.push(`🌐 ${resume.contact.website}`);
+  if (resume.contact.linkedin) links.push(`🔗 LinkedIn: ${resume.contact.linkedin}`);
+  if (resume.contact.github) links.push(`💻 GitHub: ${resume.contact.github}`);
+  if (links.length > 0) {
+    md += `${links.join(' | ')}\n`;
+  }
+  
+  md += `\n---\n\n`;
+  md += `## Professional Summary\n${resume.summary}\n\n`;
+  
+  md += `## Professional Experience\n\n`;
+  resume.experience.forEach(exp => {
+    md += `### ${exp.role} | ${exp.company}\n`;
+    md += `*${exp.period}* | *${exp.location || ''}*\n`;
+    exp.description.forEach(point => {
+      md += `- ${point}\n`;
+    });
+    md += `\n`;
+  });
+  
+  md += `## Skills\n\n`;
+  resume.skills.forEach(skill => {
+    md += `**${skill.category}**: ${skill.items.join(', ')}\n\n`;
+  });
+  
+  md += `## Projects\n\n`;
+  resume.projects.forEach(proj => {
+    md += `### ${proj.name}\n`;
+    if (proj.link) md += `*Link: ${proj.link}* | `;
+    md += `*Tech Stack: ${proj.technologies.join(', ')}*\n`;
+    md += `${proj.description}\n\n`;
+  });
+  
+  if (resume.education && resume.education.length > 0) {
+    md += `## Education\n\n`;
+    resume.education.forEach(edu => {
+      md += `### ${edu.degree}\n`;
+      md += `${edu.institution} | ${edu.period}\n`;
+      if (edu.details) md += `${edu.details}\n`;
+      md += `\n`;
+    });
+  }
+
+  if (resume.certifications && resume.certifications.length > 0) {
+    md += `\n## Certifications\n`;
+    resume.certifications.forEach(cert => {
+      md += `- ${cert}\n`;
+    });
+  }
+
+  if (resume.languages && resume.languages.length > 0) {
+    md += `\n## Languages\n`;
+    resume.languages.forEach(lang => {
+      md += `- ${lang}\n`;
+    });
+  }
+
+  return md;
+};
 
 export default function ResumeBuilder() {
   const [currentResume, setCurrentResume] = useState('');
@@ -28,6 +248,11 @@ export default function ResumeBuilder() {
   const [activeTab, setActiveTab] = useState<'resume' | 'letter' | 'analysis'>('resume');
   const [isExporting, setIsExporting] = useState(false);
   const [isExtracting, setIsExtracting] = useState(false);
+
+  // Resume Customizer States
+  const [accentColor, setAccentColor] = useState<'indigo' | 'emerald' | 'slate' | 'amber' | 'rose'>('indigo');
+  const [fontPair, setFontPair] = useState<'outfit' | 'poppins' | 'sans'>('outfit');
+  const [layoutStyle, setLayoutStyle] = useState<'split' | 'single'>('split');
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -76,7 +301,6 @@ export default function ResumeBuilder() {
       setError(err.message);
     } finally {
       setIsExtracting(false);
-      // Reset input
       e.target.value = '';
     }
   };
@@ -133,7 +357,13 @@ export default function ResumeBuilder() {
   };
 
   const handleCopy = () => {
-    const text = activeTab === 'resume' ? data?.tailoredResume : data?.coverLetter;
+    if (!data) return;
+    const text = activeTab === 'resume' 
+      ? formatResumeToMarkdown(data.tailoredResume) 
+      : activeTab === 'letter' 
+        ? data.coverLetter 
+        : data.analysis.keyImprovements;
+        
     if (text) {
       navigator.clipboard.writeText(text);
       setCopied(true);
@@ -145,42 +375,42 @@ export default function ResumeBuilder() {
     if (!data) return;
     
     setIsExporting(true);
-    const element = document.getElementById('content-area');
-    if (!element) return;
+    
+    // We target the dynamic resume-pdf-container inside the preview area
+    const element = document.getElementById('resume-pdf-container');
+    if (!element) {
+      setError('PDF container not found.');
+      setIsExporting(false);
+      return;
+    }
 
     try {
-      const { default: html2canvas } = await import('html2canvas');
-      const { jsPDF } = await import('jspdf');
-
-      // Create a clone to strip some UI elements if necessary, 
-      // but here we just target the content area
-      const canvas = await html2canvas(element, {
-        scale: 2, // Higher quality
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff'
-      });
-
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4'
-      });
-
-      const imgProps = pdf.getImageProperties(imgData);
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      const html2pdf = (await import('html2pdf.js')).default;
       
+      const candidateName = data.tailoredResume.contact.name || 'Tailored';
       const fileName = activeTab === 'resume' 
-        ? 'Tailored_Resume.pdf' 
+        ? `${candidateName.replace(/\s+/g, '_')}_Resume.pdf` 
         : activeTab === 'letter' 
-          ? 'Cover_Letter.pdf' 
-          : 'Analysis.pdf';
-          
-      pdf.save(fileName);
+          ? `${candidateName.replace(/\s+/g, '_')}_Cover_Letter.pdf` 
+          : 'Job_Fit_Analysis.pdf';
+
+      const opt = {
+        margin:       0,
+        filename:     fileName,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { 
+          scale: 2.5, // Crisp retina-quality rendering
+          useCORS: true, 
+          logging: false,
+          letterRendering: true,
+          scrollX: 0,
+          scrollY: 0
+        },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak:    { mode: ['css', 'legacy'] }
+      };
+
+      await html2pdf().from(element).set(opt).save();
     } catch (err) {
       console.error('PDF Export Error:', err);
       setError('Failed to generate PDF. Please try again.');
@@ -189,44 +419,54 @@ export default function ResumeBuilder() {
     }
   };
 
+  const currentTheme = COLOR_THEMES[accentColor];
+  const currentFonts = FONT_PAIRS[fontPair];
+
   return (
-    <div className="min-h-screen bg-[#FDFCFB] text-[#1A1A1A] font-sans selection:bg-[#F27D26]/20">
+    <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] font-sans selection:bg-indigo-100">
       {/* Header */}
-      <header className="border-b border-[#1A1A1A]/10 bg-white/80 backdrop-blur-md sticky top-0 z-20 px-6 py-4 print:hidden">
+      <header className="border-b border-[#1A1A1A]/5 bg-white/80 backdrop-blur-md sticky top-0 z-20 px-6 py-4 print:hidden">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-[#1A1A1A] rounded-lg flex items-center justify-center text-white">
-              <Sparkles className="w-5 h-5 text-[#F27D26]" />
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-md shadow-indigo-600/10">
+              <Sparkles className="w-5 h-5 text-white" />
             </div>
-            <h1 className="text-xl font-semibold tracking-tight">ResumeArchitect</h1>
+            <div>
+              <h1 className="text-lg font-bold tracking-tight text-slate-900 leading-none">ResumeArchitect</h1>
+              <span className="text-[10px] font-semibold text-slate-400 tracking-wider uppercase">Beta Studio</span>
+            </div>
           </div>
-          <div className="hidden md:flex items-center gap-4 text-xs font-medium uppercase tracking-widest text-[#1A1A1A]/40">
+          <div className="hidden md:flex items-center gap-5 text-xs font-semibold uppercase tracking-widest text-slate-400">
             <span>Precision Architecture</span>
-            <span className="w-1 h-1 bg-[#F27D26] rounded-full"></span>
+            <span className="w-1.5 h-1.5 bg-indigo-600 rounded-full"></span>
             <span>ATS Optimized</span>
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto p-6 md:p-12">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+      <main className="max-w-7xl mx-auto p-6 md:p-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
           
-          {/* Left Column: Inputs */}
-          <section className="space-y-8 print:hidden">
+          {/* Left Column: Inputs (Cols 1-5) */}
+          <section className="lg:col-span-5 space-y-6 print:hidden">
             <div className="space-y-2">
-              <h2 className="text-4xl font-light tracking-tight text-[#1A1A1A]">Engineered for <span className="font-medium italic">impact.</span></h2>
-              <p className="text-[#1A1A1A]/60 max-w-md text-lg">Align your professional narrative with the specific needs of your next role.</p>
+              <h2 className="text-3xl font-bold tracking-tight text-slate-900 leading-tight">
+                Architect your <span className="text-indigo-600">career assets.</span>
+              </h2>
+              <p className="text-slate-500 text-sm leading-relaxed">
+                Upload your raw experience data, paste your target job requirements, and let the AI system draft a clean, professional application package.
+              </p>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-6 bg-white p-6 rounded-3xl border border-slate-100 shadow-xl shadow-slate-100/40">
               {/* Resume Input */}
               <div className="space-y-3 group">
                 <div className="flex items-center justify-between">
-                  <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#1A1A1A]/40 transition-colors group-focus-within:text-[#F27D26]">
-                    <User className="w-4 h-4" />
-                    Experience Grounding (Current Resume)
+                  <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400 transition-colors group-focus-within:text-indigo-600">
+                    <User className="w-4 h-4 text-slate-400 group-focus-within:text-indigo-600" />
+                    Current Experience (Raw CV / Resume)
                   </label>
-                  <label className={`flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[#F27D26] hover:text-[#D1621B] cursor-pointer transition-colors bg-[#F27D26]/5 px-2 py-1 rounded-md ${isExtracting ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                  <label className={`flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-indigo-600 hover:text-indigo-700 cursor-pointer transition-colors bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-100 ${isExtracting ? 'opacity-50 cursor-not-allowed' : ''}`}>
                     {isExtracting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3" />}
                     {isExtracting ? 'Extracting...' : 'Upload File'}
                     <input 
@@ -240,7 +480,7 @@ export default function ResumeBuilder() {
                 </div>
                 <textarea
                   placeholder="Paste your existing resume text here or upload a file..."
-                  className="w-full min-h-[250px] p-5 bg-white border border-[#1A1A1A]/10 rounded-2xl focus:ring-4 focus:ring-[#F27D26]/5 focus:border-[#F27D26] transition-all outline-none resize-none shadow-sm text-sm leading-relaxed"
+                  className="w-full min-h-[250px] p-4 bg-slate-50/50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-600/5 focus:border-indigo-600 transition-all outline-none resize-none shadow-inner text-sm leading-relaxed"
                   value={currentResume}
                   onChange={(e) => setCurrentResume(e.target.value)}
                 />
@@ -248,13 +488,13 @@ export default function ResumeBuilder() {
 
               {/* Job description Input */}
               <div className="space-y-3 group">
-                <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#1A1A1A]/40 transition-colors group-focus-within:text-[#F27D26]">
-                  <Target className="w-4 h-4" />
+                <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400 transition-colors group-focus-within:text-indigo-600">
+                  <Target className="w-4 h-4 text-slate-400 group-focus-within:text-indigo-600" />
                   Target Specifications (Job Description)
                 </label>
                 <textarea
                   placeholder="Paste the job requirements and description here..."
-                  className="w-full min-h-[200px] p-5 bg-white border border-[#1A1A1A]/10 rounded-2xl focus:ring-4 focus:ring-[#F27D26]/5 focus:border-[#F27D26] transition-all outline-none resize-none shadow-sm text-sm leading-relaxed"
+                  className="w-full min-h-[200px] p-4 bg-slate-50/50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-600/5 focus:border-indigo-600 transition-all outline-none resize-none shadow-inner text-sm leading-relaxed"
                   value={jobDescription}
                   onChange={(e) => setJobDescription(e.target.value)}
                 />
@@ -262,37 +502,37 @@ export default function ResumeBuilder() {
 
               {error && (
                 <motion.div 
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className="p-4 bg-red-50 border border-red-100 rounded-xl flex items-center gap-3 text-red-600 text-sm"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="p-4 bg-rose-50 border border-rose-100 rounded-2xl flex items-center gap-3 text-rose-600 text-sm"
                 >
                   <AlertCircle className="w-4 h-4 shrink-0" />
-                  {error}
+                  <span className="leading-tight font-medium">{error}</span>
                 </motion.div>
               )}
 
               <button
                 onClick={handleTailor}
                 disabled={isGenerating}
-                className="w-full h-16 bg-[#1A1A1A] hover:bg-[#2A2A2A] text-white rounded-2xl font-bold tracking-tight flex items-center justify-center gap-3 transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] shadow-xl shadow-[#1A1A1A]/10 group overflow-hidden relative"
+                className="w-full h-14 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-bold tracking-wide flex items-center justify-center gap-2.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] shadow-lg shadow-indigo-600/20 group relative overflow-hidden"
               >
                 {isGenerating ? (
                   <>
-                    <Loader2 className="w-6 h-6 animate-spin" />
+                    <Loader2 className="w-5 h-5 animate-spin" />
                     <span>Processing Architecture...</span>
                   </>
                 ) : (
                   <>
-                    <Wand2 className="w-6 h-6 group-hover:rotate-12 transition-transform" />
-                    <span>Architect My Package</span>
+                    <Wand2 className="w-5 h-5 group-hover:rotate-12 transition-transform text-indigo-200" />
+                    <span>Architect Application Package</span>
                   </>
                 )}
               </button>
             </div>
           </section>
 
-          {/* Right Column: Output */}
-          <section className="lg:sticky lg:top-32 self-start space-y-6">
+          {/* Right Column: Output Preview (Cols 6-12) */}
+          <section className="lg:col-span-7 space-y-6">
             <AnimatePresence mode="wait">
               {!data && !isGenerating ? (
                 <motion.div
@@ -300,14 +540,14 @@ export default function ResumeBuilder() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="aspect-[3/4] bg-white border border-dashed border-[#1A1A1A]/20 rounded-3xl flex flex-col items-center justify-center p-12 text-center text-[#1A1A1A]/30 space-y-4 shadow-sm"
+                  className="aspect-[3/4] bg-white border border-dashed border-slate-200 rounded-3xl flex flex-col items-center justify-center p-12 text-center text-slate-400 space-y-5 shadow-sm"
                 >
-                  <div className="w-20 h-20 bg-[#1A1A1A]/5 rounded-full flex items-center justify-center">
-                    <FileText className="w-10 h-10" />
+                  <div className="w-20 h-20 bg-slate-50 rounded-2xl flex items-center justify-center border border-slate-100">
+                    <FileText className="w-10 h-10 text-slate-300" />
                   </div>
-                  <div className="space-y-1">
-                    <p className="font-semibold text-lg text-[#1A1A1A]/60">Drafting Studio</p>
-                    <p className="text-sm">Input your details to generate your tailored career assets.</p>
+                  <div className="space-y-1.5 max-w-sm">
+                    <p className="font-bold text-slate-700 text-lg">Asset Drafting Studio</p>
+                    <p className="text-sm leading-relaxed text-slate-400">Fill in the current resume and job description details on the left, then click tailor to preview and export here.</p>
                   </div>
                 </motion.div>
               ) : isGenerating ? (
@@ -316,27 +556,27 @@ export default function ResumeBuilder() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="aspect-[3/4] bg-white border border-[#1A1A1A]/10 rounded-3xl p-12 space-y-8 overflow-hidden relative shadow-inner"
+                  className="aspect-[3/4] bg-white border border-slate-100 rounded-3xl p-12 space-y-8 overflow-hidden relative shadow-xl shadow-slate-100/30"
                 >
                   <div className="space-y-6">
-                    <div className="w-2/3 h-8 bg-[#1A1A1A]/5 rounded-lg animate-pulse" />
+                    <div className="w-2/3 h-8 bg-slate-50 rounded-lg animate-pulse" />
                     <div className="space-y-3">
-                      <div className="w-full h-4 bg-[#1A1A1A]/5 rounded-lg animate-pulse" />
-                      <div className="w-full h-4 bg-[#1A1A1A]/5 rounded-lg animate-pulse" />
-                      <div className="w-[90%] h-4 bg-[#1A1A1A]/5 rounded-lg animate-pulse" />
+                      <div className="w-full h-4 bg-slate-50 rounded-lg animate-pulse" />
+                      <div className="w-full h-4 bg-slate-50 rounded-lg animate-pulse" />
+                      <div className="w-[90%] h-4 bg-slate-50 rounded-lg animate-pulse" />
                     </div>
-                    <div className="w-full h-40 bg-[#1A1A1A]/5 rounded-xl animate-pulse" />
+                    <div className="w-full h-48 bg-slate-50 rounded-2xl animate-pulse" />
                   </div>
                   
-                  <div className="absolute inset-0 bg-gradient-to-t from-white via-white/40 to-transparent flex flex-col items-center justify-center backdrop-blur-[2px]">
+                  <div className="absolute inset-0 bg-gradient-to-t from-white via-white/50 to-transparent flex flex-col items-center justify-center backdrop-blur-[2px]">
                     <div className="flex flex-col items-center gap-6">
                       <div className="relative">
-                        <div className="absolute inset-0 bg-[#F27D26]/20 blur-2xl rounded-full scale-150 animate-pulse" />
-                        <div className="w-16 h-16 border-4 border-[#F27D26]/10 border-t-[#F27D26] rounded-full animate-spin relative" />
+                        <div className="absolute inset-0 bg-indigo-600/10 blur-2xl rounded-full scale-150 animate-pulse" />
+                        <div className="w-16 h-16 border-4 border-slate-100 border-t-indigo-600 rounded-full animate-spin relative" />
                       </div>
-                      <div className="text-center space-y-2">
-                        <p className="text-lg font-bold tracking-tight text-[#1A1A1A]">Analyzing Skill Matrices</p>
-                        <p className="text-xs text-[#1A1A1A]/40 font-medium uppercase tracking-widest">Applying STAR Methodology</p>
+                      <div className="text-center space-y-1.5">
+                        <p className="text-lg font-bold tracking-tight text-slate-800">Analyzing Skill Matrices</p>
+                        <p className="text-xs text-indigo-600 font-bold uppercase tracking-widest">Applying STAR Methodology</p>
                       </div>
                     </div>
                   </div>
@@ -349,49 +589,137 @@ export default function ResumeBuilder() {
                   className="space-y-6"
                 >
                   {/* Tabs */}
-                  <div className="flex p-1.5 bg-[#1A1A1A]/5 rounded-2xl print:hidden">
+                  <div className="flex p-1.5 bg-slate-100 rounded-2xl print:hidden border border-slate-200/50">
                     {[
-                      { id: 'resume', label: 'Resume', icon: FileText },
+                      { id: 'resume', label: 'Tailored Resume', icon: FileText },
                       { id: 'letter', label: 'Cover Letter', icon: Mail },
-                      { id: 'analysis', label: 'Job Fit', icon: BarChart3 }
-                    ].map((tab) => (
-                      <button
-                        key={tab.id}
-                        onClick={() => setActiveTab(tab.id as any)}
-                        className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all ${
-                          activeTab === tab.id 
-                            ? 'bg-white text-[#1A1A1A] shadow-md' 
-                            : 'text-[#1A1A1A]/40 hover:text-[#1A1A1A]/60'
-                        }`}
-                      >
-                        <tab.icon className={`w-4 h-4 ${activeTab === tab.id ? 'text-[#F27D26]' : ''}`} />
-                        {tab.label}
-                      </button>
-                    ))}
+                      { id: 'analysis', label: 'Job Fit Report', icon: BarChart3 }
+                    ].map((tab) => {
+                      const Icon = tab.icon;
+                      return (
+                        <button
+                          key={tab.id}
+                          onClick={() => setActiveTab(tab.id as any)}
+                          className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all ${
+                            activeTab === tab.id 
+                              ? 'bg-white text-slate-800 shadow-sm border border-slate-200/20' 
+                              : 'text-slate-400 hover:text-slate-600'
+                          }`}
+                        >
+                          <Icon className={`w-4 h-4 ${activeTab === tab.id ? 'text-indigo-600' : ''}`} />
+                          {tab.label}
+                        </button>
+                      );
+                    })}
                   </div>
+
+                  {/* Template Customizer Panel (Only visible on Resume & Letter Tabs) */}
+                  {activeTab !== 'analysis' && (
+                    <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm space-y-4 print:hidden">
+                      <div className="flex flex-wrap items-center justify-between gap-4">
+                        {/* Colors */}
+                        <div className="flex items-center gap-3">
+                          <span className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                            <Palette className="w-3.5 h-3.5" />
+                            Color Theme
+                          </span>
+                          <div className="flex gap-2">
+                            {Object.entries(COLOR_THEMES).map(([key, theme]) => (
+                              <button
+                                key={key}
+                                onClick={() => setAccentColor(key as any)}
+                                title={theme.name}
+                                className={`w-6 h-6 rounded-full flex items-center justify-center transition-all ${
+                                  accentColor === key 
+                                    ? 'ring-2 ring-indigo-600 ring-offset-2 scale-110' 
+                                    : 'hover:scale-105'
+                                }`}
+                                style={{ backgroundColor: theme.hex }}
+                              >
+                                {accentColor === key && (
+                                  <div className="w-1.5 h-1.5 bg-white rounded-full" />
+                                )}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Fonts */}
+                        <div className="flex items-center gap-3">
+                          <span className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                            <Type className="w-3.5 h-3.5" />
+                            Typography
+                          </span>
+                          <div className="flex p-0.5 bg-slate-50 border border-slate-200/50 rounded-lg">
+                            {Object.entries(FONT_PAIRS).map(([key, font]) => (
+                              <button
+                                key={key}
+                                onClick={() => setFontPair(key as any)}
+                                className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition-all ${
+                                  fontPair === key 
+                                    ? 'bg-white text-slate-800 shadow-sm border border-slate-200/20' 
+                                    : 'text-slate-400 hover:text-slate-600'
+                                }`}
+                              >
+                                {font.name.split(' ')[0]}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Layout Mode (Only for Resume) */}
+                        {activeTab === 'resume' && (
+                          <div className="flex items-center gap-3">
+                            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                              <Layout className="w-3.5 h-3.5" />
+                              Layout Style
+                            </span>
+                            <div className="flex p-0.5 bg-slate-50 border border-slate-200/50 rounded-lg">
+                              {[
+                                { id: 'split', label: 'Split (2-Col)' },
+                                { id: 'single', label: 'Classic (1-Col)' }
+                              ].map((layout) => (
+                                <button
+                                  key={layout.id}
+                                  onClick={() => setLayoutStyle(layout.id as any)}
+                                  className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition-all ${
+                                    layoutStyle === layout.id 
+                                      ? 'bg-white text-slate-800 shadow-sm border border-slate-200/20' 
+                                      : 'text-slate-400 hover:text-slate-600'
+                                  }`}
+                                >
+                                  {layout.label}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Actions Area */}
                   <div className="flex items-center justify-between print:hidden">
                     <div className="flex items-center gap-3">
                       {activeTab !== 'analysis' && (
-                        <div className="flex items-center gap-2 px-3 py-1 bg-[#F27D26]/10 text-[#F27D26] rounded-full">
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                          <span className="text-[10px] font-bold uppercase tracking-wider">ATS Compatible</span>
+                        <div className="flex items-center gap-2 px-3 py-1 bg-indigo-50 border border-indigo-100 text-indigo-700 rounded-full">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-indigo-600" />
+                          <span className="text-[10px] font-bold uppercase tracking-wider">ATS Friendly</span>
                         </div>
                       )}
                     </div>
                     <div className="flex items-center gap-2 font-display">
                       <button
                         onClick={handleCopy}
-                        className="px-4 py-2 bg-white border border-[#1A1A1A]/10 rounded-xl hover:border-[#1A1A1A]/30 transition-all text-[#1A1A1A]/60 hover:text-[#1A1A1A] shadow-sm flex items-center gap-2 text-xs font-semibold"
+                        className="px-4 py-2.5 bg-white border border-slate-200 rounded-xl hover:border-slate-300 transition-all text-slate-600 hover:text-slate-800 shadow-sm flex items-center gap-2 text-xs font-semibold"
                       >
                         {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
-                        {copied ? 'Copied' : 'Copy Text'}
+                        {copied ? 'Copied' : 'Copy Content'}
                       </button>
                       <button
                         onClick={handleExportPDF}
                         disabled={isExporting}
-                        className="px-4 py-2 bg-[#1A1A1A] text-white rounded-xl hover:bg-[#2A2A2A] transition-all shadow-lg shadow-[#1A1A1A]/5 flex items-center gap-2 text-xs font-semibold disabled:opacity-50"
+                        className="px-4 py-2.5 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-all shadow-md flex items-center gap-2 text-xs font-semibold disabled:opacity-50"
                       >
                         {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
                         {isExporting ? 'Exporting...' : 'PDF Export'}
@@ -399,90 +727,620 @@ export default function ResumeBuilder() {
                     </div>
                   </div>
 
-                  {/* Content Container */}
-                  <div 
-                    id="content-area"
-                    className="bg-white border border-[#1A1A1A]/10 rounded-3xl p-8 md:p-12 shadow-2xl shadow-[#1A1A1A]/5 overflow-hidden print:shadow-none print:p-0 print:border-none"
-                  >
-                    <AnimatePresence mode="wait">
-                      {activeTab === 'analysis' ? (
-                        <motion.div
-                          key="analysis"
-                          initial={{ opacity: 0, x: 20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          exit={{ opacity: 0, x: -20 }}
-                          className="space-y-10"
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="space-y-1">
-                              <h3 className="text-2xl font-bold tracking-tight">Market Fit Analysis</h3>
-                              <p className="text-sm text-[#1A1A1A]/40 uppercase tracking-widest font-semibold">Alignment Score</p>
+                  {/* A4 Paper Sheet Wrapper */}
+                  <div className="w-full overflow-x-auto p-4 flex justify-center bg-slate-100 rounded-3xl border border-slate-200/50 shadow-inner print:bg-white print:p-0 print:border-none print:shadow-none">
+                    
+                    <div 
+                      id="resume-pdf-container"
+                      className={`bg-white text-slate-800 shadow-2xl relative print:shadow-none print:p-0 print:border-none ${currentFonts.bodyClass}`}
+                      style={{
+                        width: '210mm',
+                        minHeight: '297mm',
+                        boxSizing: 'border-box',
+                        fontFamily: currentFonts.bodyFamily
+                      }}
+                    >
+                      {activeTab === 'resume' ? (
+                        /* RESUME TEMPLATES */
+                        layoutStyle === 'split' ? (
+                          /* TWO COLUMN SPLIT LAYOUT */
+                          <div className="flex w-full min-h-[297mm]">
+                            
+                            {/* Left Column (Sidebar) - 34% width */}
+                            <div 
+                              className="w-[34%] p-7 flex flex-col gap-6 border-r border-slate-100"
+                              style={{ backgroundColor: currentTheme.sidebarBg }}
+                            >
+                              {/* Contact Information Group */}
+                              <div className="space-y-4 break-inside-avoid">
+                                <h3 className={`text-xs font-bold uppercase tracking-wider pb-1.5 border-b`} style={{ color: currentTheme.primary, borderColor: `${currentTheme.primary}20` }}>
+                                  Contact
+                                </h3>
+                                <ul className="space-y-2.5 text-[11px] text-slate-600">
+                                  <li className="flex items-center gap-2 hover:text-slate-800 transition-colors">
+                                    <Mail className="w-3.5 h-3.5 shrink-0" style={{ color: currentTheme.primary }} />
+                                    <span className="truncate">{data.tailoredResume.contact.email}</span>
+                                  </li>
+                                  <li className="flex items-center gap-2 hover:text-slate-800 transition-colors">
+                                    <Phone className="w-3.5 h-3.5 shrink-0" style={{ color: currentTheme.primary }} />
+                                    <span>{data.tailoredResume.contact.phone}</span>
+                                  </li>
+                                  <li className="flex items-center gap-2 hover:text-slate-800 transition-colors">
+                                    <MapPin className="w-3.5 h-3.5 shrink-0" style={{ color: currentTheme.primary }} />
+                                    <span>{data.tailoredResume.contact.location}</span>
+                                  </li>
+                                  {data.tailoredResume.contact.website && (
+                                    <li className="flex items-center gap-2 hover:text-slate-800 transition-colors">
+                                      <Globe className="w-3.5 h-3.5 shrink-0" style={{ color: currentTheme.primary }} />
+                                      <span className="truncate">{data.tailoredResume.contact.website}</span>
+                                    </li>
+                                  )}
+                                  {data.tailoredResume.contact.linkedin && (
+                                    <li className="flex items-center gap-2 hover:text-slate-800 transition-colors">
+                                      <Linkedin className="w-3.5 h-3.5 shrink-0" style={{ color: currentTheme.primary }} />
+                                      <span className="truncate">{data.tailoredResume.contact.linkedin}</span>
+                                    </li>
+                                  )}
+                                  {data.tailoredResume.contact.github && (
+                                    <li className="flex items-center gap-2 hover:text-slate-800 transition-colors">
+                                      <Github className="w-3.5 h-3.5 shrink-0" style={{ color: currentTheme.primary }} />
+                                      <span className="truncate">{data.tailoredResume.contact.github}</span>
+                                    </li>
+                                  )}
+                                </ul>
+                              </div>
+
+                              {/* Skills Section */}
+                              <div className="space-y-4 break-inside-avoid">
+                                <h3 className={`text-xs font-bold uppercase tracking-wider pb-1.5 border-b`} style={{ color: currentTheme.primary, borderColor: `${currentTheme.primary}20` }}>
+                                  Core Expertise
+                                </h3>
+                                <div className="space-y-3">
+                                  {data.tailoredResume.skills.map((cat, i) => (
+                                    <div key={i} className="space-y-1">
+                                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">
+                                        {cat.category}
+                                      </p>
+                                      <div className="flex flex-wrap gap-1">
+                                        {cat.items.map((item, idx) => (
+                                          <span 
+                                            key={idx} 
+                                            className="px-2 py-0.5 rounded text-[10px] font-medium border text-slate-700 bg-white"
+                                            style={{ borderColor: `${currentTheme.primary}10` }}
+                                          >
+                                            {item}
+                                          </span>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+
+                              {/* Education Section */}
+                              <div className="space-y-4 break-inside-avoid">
+                                <h3 className={`text-xs font-bold uppercase tracking-wider pb-1.5 border-b`} style={{ color: currentTheme.primary, borderColor: `${currentTheme.primary}20` }}>
+                                  Education
+                                </h3>
+                                <div className="space-y-3">
+                                  {data.tailoredResume.education.map((edu, i) => (
+                                    <div key={i} className="space-y-0.5 text-[11px]">
+                                      <p className="font-bold text-slate-800 leading-tight">{edu.degree}</p>
+                                      <p className="text-slate-600 leading-tight">{edu.institution}</p>
+                                      <p className="text-[10px] text-slate-400 italic">{edu.period} {edu.location ? `| ${edu.location}` : ''}</p>
+                                      {edu.details && <p className="text-[10px] text-slate-500 mt-1 leading-snug">{edu.details}</p>}
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+
+                              {/* Certifications if available */}
+                              {data.tailoredResume.certifications && data.tailoredResume.certifications.length > 0 && (
+                                <div className="space-y-4 break-inside-avoid">
+                                  <h3 className={`text-xs font-bold uppercase tracking-wider pb-1.5 border-b`} style={{ color: currentTheme.primary, borderColor: `${currentTheme.primary}20` }}>
+                                    Credentials
+                                  </h3>
+                                  <ul className="space-y-1.5 text-[11px] text-slate-600">
+                                    {data.tailoredResume.certifications.map((cert, i) => (
+                                      <li key={i} className="flex gap-1.5 items-start">
+                                        <Award className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
+                                        <span className="leading-snug">{cert}</span>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
+
+                              {/* Languages if available */}
+                              {data.tailoredResume.languages && data.tailoredResume.languages.length > 0 && (
+                                <div className="space-y-4 break-inside-avoid">
+                                  <h3 className={`text-xs font-bold uppercase tracking-wider pb-1.5 border-b`} style={{ color: currentTheme.primary, borderColor: `${currentTheme.primary}20` }}>
+                                    Languages
+                                  </h3>
+                                  <ul className="space-y-1.5 text-[11px] text-slate-600">
+                                    {data.tailoredResume.languages.map((lang, i) => (
+                                      <li key={i} className="flex gap-1.5 items-center">
+                                        <Languages className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                                        <span>{lang}</span>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
+
+                              {/* References if available */}
+                              {data.tailoredResume.references && data.tailoredResume.references.length > 0 && (
+                                <div className="space-y-4 break-inside-avoid">
+                                  <h3 className={`text-xs font-bold uppercase tracking-wider pb-1.5 border-b`} style={{ color: currentTheme.primary, borderColor: `${currentTheme.primary}20` }}>
+                                    References
+                                  </h3>
+                                  <div className="space-y-3">
+                                    {data.tailoredResume.references.map((ref, i) => (
+                                      <div key={i} className="space-y-0.5 text-[11px]">
+                                        <p className="font-bold text-slate-800 leading-tight">{ref.name}</p>
+                                        {ref.title && <p className="text-slate-600 leading-tight">{ref.title}</p>}
+                                        {ref.company && <p className="text-[10px] text-slate-500 leading-tight">{ref.company}</p>}
+                                        {ref.relationship && (
+                                          <span className="inline-block px-1.5 py-0.5 rounded text-[9px] font-bold uppercase border mt-0.5"
+                                            style={{ color: currentTheme.primary, borderColor: `${currentTheme.primary}20`, backgroundColor: `${currentTheme.primary}05` }}>
+                                            {ref.relationship}
+                                          </span>
+                                        )}
+                                        {ref.email && <p className="text-[10px] text-slate-400 mt-0.5">{ref.email}</p>}
+                                        {ref.phone && <p className="text-[10px] text-slate-400">{ref.phone}</p>}
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
                             </div>
-                            <div className="relative w-24 h-24 flex items-center justify-center">
+
+                            {/* Right Column (Main content area) - 66% width */}
+                            <div className="w-[66%] p-8 flex flex-col gap-6">
+                              {/* Header Title */}
+                              <div className="space-y-1 border-b pb-4">
+                                <h2 className={`text-3xl font-bold tracking-tight text-slate-900 ${currentFonts.headerClass}`} style={{ fontFamily: currentFonts.headerFamily }}>
+                                  {data.tailoredResume.contact.name}
+                                </h2>
+                                <p className="text-sm font-semibold tracking-wider uppercase" style={{ color: currentTheme.primary }}>
+                                  {data.tailoredResume.contact.title}
+                                </p>
+                              </div>
+
+                              {/* Professional Summary */}
+                              <div className="space-y-2.5 break-inside-avoid">
+                                <h3 className={`text-xs font-bold uppercase tracking-wider`} style={{ color: currentTheme.primary }}>
+                                  Professional Summary
+                                </h3>
+                                <p className="text-[12px] text-slate-600 leading-relaxed font-normal">
+                                  {data.tailoredResume.summary}
+                                </p>
+                              </div>
+
+                              {/* Work Experience */}
+                              <div className="space-y-4">
+                                <h3 className={`text-xs font-bold uppercase tracking-wider border-b pb-1`} style={{ color: currentTheme.primary, borderColor: `${currentTheme.primary}10` }}>
+                                  Work History
+                                </h3>
+                                <div className="space-y-4">
+                                  {data.tailoredResume.experience.map((exp, i) => (
+                                    <div key={i} className="space-y-1.5 break-inside-avoid">
+                                      <div className="flex justify-between items-baseline">
+                                        <h4 className="text-[12px] font-bold text-slate-800">{exp.role}</h4>
+                                        <span className="text-[10px] font-bold text-slate-400">{exp.period}</span>
+                                      </div>
+                                      <div className="flex justify-between items-baseline text-[10.5px] text-slate-500 italic">
+                                        <span>{exp.company}</span>
+                                        <span>{exp.location}</span>
+                                      </div>
+                                      <ul className="list-disc pl-4 space-y-1">
+                                        {exp.description.map((pt, idx) => (
+                                          <li key={idx} className="text-[11px] text-slate-600 leading-relaxed pl-0.5">
+                                            {pt}
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+
+                              {/* Key Projects */}
+                              <div className="space-y-4">
+                                <h3 className={`text-xs font-bold uppercase tracking-wider border-b pb-1`} style={{ color: currentTheme.primary, borderColor: `${currentTheme.primary}10` }}>
+                                  Projects
+                                </h3>
+                                <div className="space-y-4">
+                                  {data.tailoredResume.projects.map((proj, i) => (
+                                    <div key={i} className="space-y-1.5 break-inside-avoid">
+                                      <div className="flex justify-between items-baseline">
+                                        <h4 className="text-[12px] font-bold text-slate-800">{proj.name}</h4>
+                                        {proj.link && (
+                                          <span className="text-[10px] text-slate-400 hover:underline">{proj.link}</span>
+                                        )}
+                                      </div>
+                                      <div className="flex flex-wrap gap-1">
+                                        {proj.technologies.map((tech, idx) => (
+                                          <span 
+                                            key={idx} 
+                                            className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase bg-slate-50 text-slate-500 border border-slate-100"
+                                          >
+                                            {tech}
+                                          </span>
+                                        ))}
+                                      </div>
+                                      <p className="text-[11px] text-slate-600 leading-relaxed">
+                                        {proj.description}
+                                      </p>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+
+                            </div>
+                          </div>
+                        ) : (
+                          /* SINGLE COLUMN LAYOUT (Top-Down Classic) */
+                          <div className="p-10 flex flex-col gap-6">
+                            {/* Center-Aligned Header */}
+                            <div className="text-center space-y-2 border-b pb-5">
+                              <h2 className={`text-3xl font-bold tracking-tight text-slate-900 ${currentFonts.headerClass}`} style={{ fontFamily: currentFonts.headerFamily }}>
+                                {data.tailoredResume.contact.name}
+                              </h2>
+                              <p className="text-sm font-bold tracking-widest uppercase" style={{ color: currentTheme.primary }}>
+                                {data.tailoredResume.contact.title}
+                              </p>
+                              
+                              {/* Contact Grid */}
+                              <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[11px] text-slate-500 font-medium">
+                                <span className="flex items-center gap-1">
+                                  <Mail className="w-3.5 h-3.5" style={{ color: currentTheme.primary }} />
+                                  {data.tailoredResume.contact.email}
+                                </span>
+                                <span>•</span>
+                                <span className="flex items-center gap-1">
+                                  <Phone className="w-3.5 h-3.5" style={{ color: currentTheme.primary }} />
+                                  {data.tailoredResume.contact.phone}
+                                </span>
+                                <span>•</span>
+                                <span className="flex items-center gap-1">
+                                  <MapPin className="w-3.5 h-3.5" style={{ color: currentTheme.primary }} />
+                                  {data.tailoredResume.contact.location}
+                                </span>
+                                {data.tailoredResume.contact.website && (
+                                  <>
+                                    <span>•</span>
+                                    <span className="flex items-center gap-1">
+                                      <Globe className="w-3.5 h-3.5" style={{ color: currentTheme.primary }} />
+                                      {data.tailoredResume.contact.website}
+                                    </span>
+                                  </>
+                                )}
+                              </div>
+                              
+                              <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[11px] text-slate-500 font-medium">
+                                {data.tailoredResume.contact.linkedin && (
+                                  <span className="flex items-center gap-1">
+                                    <Linkedin className="w-3.5 h-3.5" style={{ color: currentTheme.primary }} />
+                                    {data.tailoredResume.contact.linkedin}
+                                  </span>
+                                )}
+                                {data.tailoredResume.contact.linkedin && data.tailoredResume.contact.github && <span>•</span>}
+                                {data.tailoredResume.contact.github && (
+                                  <span className="flex items-center gap-1">
+                                    <Github className="w-3.5 h-3.5" style={{ color: currentTheme.primary }} />
+                                    {data.tailoredResume.contact.github}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Summary */}
+                            <div className="space-y-2 break-inside-avoid">
+                              <h3 className="text-xs font-bold uppercase tracking-wider border-b pb-1" style={{ color: currentTheme.primary }}>
+                                Professional Profile
+                              </h3>
+                              <p className="text-[12px] text-slate-600 leading-relaxed font-normal">
+                                {data.tailoredResume.summary}
+                              </p>
+                            </div>
+
+                            {/* Skills Grid */}
+                            <div className="space-y-3 break-inside-avoid">
+                              <h3 className="text-xs font-bold uppercase tracking-wider border-b pb-1" style={{ color: currentTheme.primary }}>
+                                Technical Expertise
+                              </h3>
+                              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                {data.tailoredResume.skills.map((cat, i) => (
+                                  <div key={i} className="space-y-1 text-[11px]">
+                                    <p className="font-bold text-slate-700 leading-tight uppercase tracking-wider text-[10px]">
+                                      {cat.category}
+                                    </p>
+                                    <p className="text-slate-500 leading-relaxed">
+                                      {cat.items.join(', ')}
+                                    </p>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Experience */}
+                            <div className="space-y-4">
+                              <h3 className="text-xs font-bold uppercase tracking-wider border-b pb-1" style={{ color: currentTheme.primary }}>
+                                Professional Experience
+                              </h3>
+                              <div className="space-y-4">
+                                {data.tailoredResume.experience.map((exp, i) => (
+                                  <div key={i} className="space-y-1 break-inside-avoid">
+                                    <div className="flex justify-between items-baseline">
+                                      <div className="flex gap-2 items-baseline">
+                                        <h4 className="text-[12px] font-bold text-slate-800">{exp.role}</h4>
+                                        <span className="text-[11px] text-slate-400 font-medium">| {exp.company}</span>
+                                      </div>
+                                      <span className="text-[10px] font-bold text-slate-400">{exp.period}</span>
+                                    </div>
+                                    <p className="text-[10px] text-slate-400 font-medium italic mb-1.5">{exp.location}</p>
+                                    <ul className="list-disc pl-4 space-y-1">
+                                      {exp.description.map((pt, idx) => (
+                                        <li key={idx} className="text-[11px] text-slate-600 leading-relaxed pl-0.5">
+                                          {pt}
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Projects */}
+                            <div className="space-y-4">
+                              <h3 className="text-xs font-bold uppercase tracking-wider border-b pb-1" style={{ color: currentTheme.primary }}>
+                                Key Projects
+                              </h3>
+                              <div className="space-y-4">
+                                {data.tailoredResume.projects.map((proj, i) => (
+                                  <div key={i} className="space-y-1.5 break-inside-avoid">
+                                    <div className="flex justify-between items-baseline">
+                                      <h4 className="text-[12px] font-bold text-slate-800">{proj.name}</h4>
+                                      {proj.link && (
+                                        <span className="text-[10px] text-slate-400 hover:underline">{proj.link}</span>
+                                      )}
+                                    </div>
+                                    <div className="flex flex-wrap gap-1">
+                                      {proj.technologies.map((tech, idx) => (
+                                        <span 
+                                          key={idx} 
+                                          className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase bg-slate-50 text-slate-500 border border-slate-100"
+                                        >
+                                          {tech}
+                                        </span>
+                                      ))}
+                                    </div>
+                                    <p className="text-[11px] text-slate-600 leading-relaxed">
+                                      {proj.description}
+                                    </p>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Education, Certifications, Languages in 3 cols */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2 border-t border-slate-100">
+                              {/* Education */}
+                              <div className="space-y-2.5 break-inside-avoid">
+                                <h3 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 pb-0.5 border-b border-slate-100">
+                                  Education
+                                </h3>
+                                {data.tailoredResume.education.map((edu, i) => (
+                                  <div key={i} className="text-[11px]">
+                                    <p className="font-bold text-slate-700 leading-tight">{edu.degree}</p>
+                                    <p className="text-slate-600 leading-none mt-0.5">{edu.institution}</p>
+                                    <p className="text-[9.5px] text-slate-400 mt-0.5">{edu.period}</p>
+                                  </div>
+                                ))}
+                              </div>
+                              
+                              {/* Certifications */}
+                              <div className="space-y-2.5 break-inside-avoid">
+                                <h3 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 pb-0.5 border-b border-slate-100">
+                                  Certifications
+                                </h3>
+                                <ul className="space-y-1 text-[11px] text-slate-600">
+                                  {data.tailoredResume.certifications?.map((cert, i) => (
+                                    <li key={i} className="truncate">• {cert}</li>
+                                  ))}
+                                </ul>
+                              </div>
+
+                              {/* Languages */}
+                              <div className="space-y-2.5 break-inside-avoid">
+                                <h3 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 pb-0.5 border-b border-slate-100">
+                                  Languages
+                                </h3>
+                                <ul className="space-y-1 text-[11px] text-slate-600">
+                                  {data.tailoredResume.languages?.map((lang, i) => (
+                                    <li key={i}>• {lang}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            </div>
+
+                            {/* References Section (single column) */}
+                            {data.tailoredResume.references && data.tailoredResume.references.length > 0 && (
+                              <div className="space-y-4 pt-2 border-t border-slate-100 break-inside-avoid">
+                                <h3 className="text-xs font-bold uppercase tracking-wider border-b pb-1" style={{ color: currentTheme.primary }}>
+                                  References
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                  {data.tailoredResume.references.map((ref, i) => (
+                                    <div key={i} className="space-y-0.5 text-[11px] p-3 rounded-xl border border-slate-100 bg-slate-50/50">
+                                      <p className="font-bold text-slate-800 leading-tight">{ref.name}</p>
+                                      {ref.title && <p className="text-slate-600 leading-tight">{ref.title}</p>}
+                                      {ref.company && <p className="text-[10px] text-slate-500">{ref.company}</p>}
+                                      {ref.relationship && (
+                                        <span className="inline-block px-1.5 py-0.5 rounded text-[9px] font-bold uppercase border mt-0.5"
+                                          style={{ color: currentTheme.primary, borderColor: `${currentTheme.primary}20`, backgroundColor: `${currentTheme.primary}05` }}>
+                                          {ref.relationship}
+                                        </span>
+                                      )}
+                                      <div className="pt-0.5 space-y-0.5">
+                                        {ref.email && <p className="text-[10px] text-slate-400">{ref.email}</p>}
+                                        {ref.phone && <p className="text-[10px] text-slate-400">{ref.phone}</p>}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )
+                      ) : activeTab === 'letter' ? (
+                        /* COVER LETTER LETTERHEAD TEMPLATE */
+                        <div className="p-12 flex flex-col gap-8 min-h-[297mm]">
+                          
+                          {/* Header block (Matches Resume branding) */}
+                          <div className="flex justify-between items-start border-b pb-6">
+                            <div>
+                              <h2 className={`text-3xl font-bold tracking-tight text-slate-900 ${currentFonts.headerClass}`} style={{ fontFamily: currentFonts.headerFamily }}>
+                                {data.tailoredResume.contact.name}
+                              </h2>
+                              <p className="text-sm font-bold tracking-widest uppercase" style={{ color: currentTheme.primary }}>
+                                {data.tailoredResume.contact.title}
+                              </p>
+                            </div>
+                            <div className="text-right text-[11px] text-slate-500 space-y-1">
+                              <p>{data.tailoredResume.contact.email}</p>
+                              <p>{data.tailoredResume.contact.phone}</p>
+                              <p>{data.tailoredResume.contact.location}</p>
+                            </div>
+                          </div>
+
+                          {/* Letter Meta Details */}
+                          <div className="space-y-1 text-[12px] text-slate-500 mt-2">
+                            <p className="font-semibold text-slate-800">
+                              {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                            </p>
+                          </div>
+
+                          {/* Cover Letter Content Body */}
+                          <div className="text-[12.5px] text-slate-700 leading-relaxed space-y-4 max-w-2xl mt-4">
+                            {data.coverLetter.split('\n\n').map((paragraph, idx) => (
+                              <p key={idx} className="font-normal">
+                                {paragraph}
+                              </p>
+                            ))}
+                          </div>
+
+                          {/* Sign-off */}
+                          <div className="mt-8 space-y-4 text-[12.5px] text-slate-600">
+                            <p>Sincerely,</p>
+                            <div>
+                              <p className="font-bold text-slate-800">{data.tailoredResume.contact.name}</p>
+                              <p className="text-[11px] text-slate-400">{data.tailoredResume.contact.title}</p>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        /* JOB FIT REPORT TEMPLATE */
+                        <div className="p-12 flex flex-col gap-8 min-h-[297mm]">
+                          
+                          {/* Header block */}
+                          <div className="flex justify-between items-center border-b pb-5">
+                            <div>
+                              <h2 className="text-2xl font-bold text-slate-900 font-display">
+                                Job Fit Analysis Report
+                              </h2>
+                              <p className="text-xs text-slate-400 uppercase tracking-widest font-semibold mt-1">
+                                Aligning {data.tailoredResume.contact.name} with Target Role
+                              </p>
+                            </div>
+                            <div className="relative w-20 h-20 flex items-center justify-center">
                               <svg className="w-full h-full transform -rotate-90">
                                 <circle
-                                  cx="48" cy="48" r="40"
-                                  stroke="currentColor" strokeWidth="8"
-                                  fill="transparent" className="text-[#1A1A1A]/5"
+                                  cx="40" cy="40" r="32"
+                                  stroke="currentColor" strokeWidth="6"
+                                  fill="transparent" className="text-slate-100"
                                 />
                                 <circle
-                                  cx="48" cy="48" r="40"
-                                  stroke="currentColor" strokeWidth="8"
-                                  fill="transparent" className="text-[#F27D26]"
-                                  strokeDasharray={251.2}
-                                  strokeDashoffset={251.2 - (251.2 * data.analysis.matchScore) / 100}
+                                  cx="40" cy="40" r="32"
+                                  stroke="currentColor" strokeWidth="6"
+                                  fill="transparent" style={{ color: currentTheme.primary }}
+                                  strokeDasharray={201}
+                                  strokeDashoffset={201 - (201 * data.analysis.matchScore) / 100}
                                   strokeLinecap="round"
                                 />
                               </svg>
-                              <span className="absolute text-xl font-bold">{data.analysis.matchScore}%</span>
+                              <span className="absolute text-sm font-bold text-slate-800">{data.analysis.matchScore}%</span>
                             </div>
                           </div>
 
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <div className="space-y-4">
-                              <div className="flex items-center gap-2 text-xs font-bold text-green-600 uppercase tracking-wider">
-                                <CheckCircle2 className="w-4 h-4" /> Matched Keywords
-                              </div>
-                              <div className="flex flex-wrap gap-2">
-                                {data.analysis.matchedKeywords.map((kw, i) => (
-                                  <span key={i} className="px-3 py-1 bg-green-50 text-green-700 rounded-lg text-xs font-medium border border-green-100 italic">#{kw}</span>
-                                ))}
-                              </div>
+                          <div className="space-y-6">
+                            
+                            {/* Match Score Explanation */}
+                            <div className="space-y-2">
+                              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                                Compatibility Score Summary
+                              </h3>
+                              <p className="text-[12.5px] text-slate-600 leading-relaxed">
+                                The tailoring engine reports a compatibility of <strong className="text-slate-800">{data.analysis.matchScore}%</strong>. The tailored resume on the previous page has been re-architected to highlights these connections.
+                              </p>
                             </div>
-                            <div className="space-y-4">
-                              <div className="flex items-center gap-2 text-xs font-bold text-[#F27D26] uppercase tracking-wider">
-                                <AlertCircle className="w-4 h-4" /> Missing Key Factors
-                              </div>
-                              <div className="flex flex-wrap gap-2">
-                                {data.analysis.missingKeywords.map((kw, i) => (
-                                  <span key={i} className="px-3 py-1 bg-[#F27D26]/5 text-[#F27D26] rounded-lg text-xs font-medium border border-[#F27D26]/10 italic">#{kw}</span>
-                                ))}
-                              </div>
-                            </div>
-                          </div>
 
-                          <div className="p-6 bg-[#1A1A1A]/2 border border-[#1A1A1A]/5 rounded-2xl space-y-3">
-                            <h4 className="text-sm font-bold uppercase tracking-widest flex items-center gap-2">
-                              <Sparkles className="w-4 h-4 text-[#F27D26]" /> 
-                              Architect's Strategy
-                            </h4>
-                            <p className="text-sm text-[#1A1A1A]/70 leading-relaxed italic">"{data.analysis.keyImprovements}"</p>
+                            {/* Keywords Grid */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                              <div className="space-y-3">
+                                <div className="flex items-center gap-2 text-xs font-bold text-emerald-600 uppercase tracking-wider">
+                                  <CheckCircle2 className="w-4 h-4" /> Matched Keywords
+                                </div>
+                                <div className="flex flex-wrap gap-1.5">
+                                  {data.analysis.matchedKeywords.map((kw, i) => (
+                                    <span 
+                                      key={i} 
+                                      className="px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-lg text-[10.5px] font-bold border border-emerald-100"
+                                    >
+                                      {kw}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                              <div className="space-y-3">
+                                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider" style={{ color: currentTheme.primary }}>
+                                  <AlertCircle className="w-4 h-4" /> Missing Key Factors
+                                </div>
+                                <div className="flex flex-wrap gap-1.5">
+                                  {data.analysis.missingKeywords.map((kw, i) => (
+                                    <span 
+                                      key={i} 
+                                      className="px-2.5 py-1 rounded-lg text-[10.5px] font-bold border"
+                                      style={{ 
+                                        backgroundColor: `${currentTheme.primary}05`, 
+                                        color: currentTheme.primary,
+                                        borderColor: `${currentTheme.primary}15`
+                                      }}
+                                    >
+                                      {kw}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Architect Strategy */}
+                            <div className="p-6 bg-slate-50 border border-slate-100 rounded-2xl space-y-3 mt-4 break-inside-avoid">
+                              <h4 className="text-xs font-bold uppercase tracking-widest flex items-center gap-2 text-slate-700">
+                                <Sparkles className="w-4 h-4 text-indigo-600" /> 
+                                Tailoring Strategy & Guidance
+                              </h4>
+                              <p className="text-[12.5px] text-slate-600 leading-relaxed italic">
+                                "{data.analysis.keyImprovements}"
+                              </p>
+                            </div>
+
                           </div>
-                        </motion.div>
-                      ) : (
-                        <motion.div
-                          key={activeTab}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -20 }}
-                          className="markdown-body prose prose-slate max-w-none prose-headings:font-semibold prose-headings:tracking-tight prose-p:text-[#1A1A1A]/80 prose-li:text-[#1A1A1A]/80"
-                        >
-                          <ReactMarkdown>
-                            {activeTab === 'resume' ? data.tailoredResume : data.coverLetter}
-                          </ReactMarkdown>
-                        </motion.div>
+                        </div>
                       )}
-                    </AnimatePresence>
+                    </div>
+
                   </div>
                 </motion.div>
               )}
@@ -494,39 +1352,42 @@ export default function ResumeBuilder() {
       <footer className="max-w-7xl mx-auto px-12 py-12 text-[#1A1A1A]/30 text-center space-y-4 print:hidden">
         <div className="flex items-center justify-center gap-8 text-[10px] uppercase font-bold tracking-[0.3em]">
           <span>Security & Privacy First</span>
-          <span className="w-1.5 h-1.5 bg-[#F27D26] rounded-full"></span>
-          <span>Zero Data Persistence</span>
-          <span className="w-1.5 h-1.5 bg-[#F27D26] rounded-full"></span>
+          <span className="w-1.5 h-1.5 bg-indigo-600 rounded-full"></span>
+          <span>Zero Data Retention</span>
+          <span className="w-1.5 h-1.5 bg-indigo-600 rounded-full"></span>
           <span>Open Standards</span>
         </div>
       </footer>
 
       <style>{`
-        .markdown-body h1 { font-family: var(--font-display); font-size: 2.75rem; border-bottom: 3px solid #1A1A1A; padding-bottom: 0.75rem; margin-top: 0; margin-bottom: 1.5rem; letter-spacing: -0.02em; }
-        .markdown-body h2 { font-family: var(--font-display); font-size: 1.75rem; margin-top: 2.5rem; margin-bottom: 1.25rem; border-bottom: 1px solid #1A1A1A/20; padding-bottom: 0.5rem; letter-spacing: -0.01em; }
-        .markdown-body h3 { font-size: 1.25rem; margin-top: 1.5rem; margin-bottom: 0.75rem; font-weight: 700; color: #1A1A1A; }
-        .markdown-body p { margin-bottom: 1.25rem; line-height: 1.7; font-size: 0.95rem; }
-        .markdown-body ul { list-style-type: square; padding-left: 1.5rem; margin-bottom: 1.5rem; }
-        .markdown-body li { margin-bottom: 0.6rem; padding-left: 0.5rem; }
-        .markdown-body strong { color: #1A1A1A; font-weight: 700; }
-        .markdown-body em { font-style: italic; color: #1A1A1A/60; }
+        .break-inside-avoid {
+          break-inside: avoid !important;
+          page-break-inside: avoid !important;
+          -webkit-column-break-inside: avoid !important;
+        }
 
+        /* Print adjustments for exact color and formatting preservation */
         @media print {
-          header, section:first-of-type, .print\\:hidden, .hidden {
+          body {
+            background: white !important;
+            color: #0f172a !important;
+            font-size: 11pt !important;
+          }
+          header, section:first-of-type, .print\\:hidden, button, .customizer-panel {
             display: none !important;
           }
-          body { background: white; }
-          main { padding: 0 !important; margin: 0 !important; max-width: none !important; }
-          #content-area {
-            border: none !important;
+          #resume-pdf-container {
+            width: 210mm !important;
+            min-height: 297mm !important;
             box-shadow: none !important;
+            border: none !important;
+            margin: 0 !important;
             padding: 0 !important;
-            width: 100% !important;
-            overflow: visible !important;
           }
-          .markdown-body h1 { font-size: 24pt; border-bottom-width: 1.5pt; }
-          .markdown-body h2 { font-size: 16pt; margin-top: 20pt; }
-          .markdown-body p, .markdown-body li { font-size: 10pt; line-height: 1.5; }
+          * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
         }
       `}</style>
     </div>

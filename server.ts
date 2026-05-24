@@ -135,19 +135,23 @@ async function startServer() {
           You are an expert resume writer and career coach. 
           I will provide a user's current resume and a job description. 
           Your task is to:
-          1. Refactor the resume to perfectly tailor it for the job description.
-          2. Write a professional cover letter.
+          1. Refactor and tailor the resume to perfectly fit the target job description, structuring it into the required JSON schema.
+          2. Write a professional cover letter tailored to the job description.
           3. Provide a match analysis score (0-100) and identify keywords.
 
           Guidelines for Resume:
-          - Use industry keywords from the job description.
-          - Quantify achievements using the STAR method.
-          - Ensure ATS compatibility (clean, logical structure).
-          - Maintain absolute truthfulness.
+          - Extract personal details (name, email, phone, location) from the current resume. If not found, use placeholder or standard details. Include LinkedIn, GitHub, or portfolio links if they are in the current resume.
+          - Refactor the professional summary to highlight the candidate's core value proposition for this target role.
+          - Refactor work experience. Rewrite experience bullet points to emphasize skills, technologies, and achievements relevant to the job description. Quantify achievements using the STAR method (e.g., "Increased performance by 25% by implementing X").
+          - Extract and category skills (e.g., Languages, Frameworks, Developer Tools, Design, Soft Skills). Ensure skills required by the job description are included if they align with the candidate's experience.
+          - Extract ALL projects from the current resume without omitting any. Even if a project is not directly relevant to the job description, include it. Refactor each project to highlight the tech stack used and accomplishments.
+          - Extract certifications and languages if present in the current resume.
+          - Extract ALL references from the current resume. For each reference include their full name, job title, company/organisation, and contact details (email and/or phone) if provided. If a reference says "Available on request", include that as a single reference entry with name set to "Available on request" and other fields empty.
+          - The returned JSON must match the required schema exactly.
 
           Guidelines for Cover Letter:
-          - Address the specific needs and pain points mentioned in the JD.
-          - Professional, confident, but humble tone.
+          - Address the specific needs and pain points mentioned in the job description.
+          - Maintain a professional, confident, and compelling tone.
 
           CURRENT RESUME:
           ${currentResume}
@@ -160,7 +164,102 @@ async function startServer() {
           responseSchema: {
             type: Type.OBJECT,
             properties: {
-              tailoredResume: { type: Type.STRING },
+              tailoredResume: {
+                type: Type.OBJECT,
+                properties: {
+                  contact: {
+                    type: Type.OBJECT,
+                    properties: {
+                      name: { type: Type.STRING },
+                      title: { type: Type.STRING },
+                      email: { type: Type.STRING },
+                      phone: { type: Type.STRING },
+                      location: { type: Type.STRING },
+                      website: { type: Type.STRING },
+                      linkedin: { type: Type.STRING },
+                      github: { type: Type.STRING }
+                    },
+                    required: ["name", "title", "email", "phone", "location"]
+                  },
+                  summary: { type: Type.STRING },
+                  experience: {
+                    type: Type.ARRAY,
+                    items: {
+                      type: Type.OBJECT,
+                      properties: {
+                        role: { type: Type.STRING },
+                        company: { type: Type.STRING },
+                        location: { type: Type.STRING },
+                        period: { type: Type.STRING },
+                        description: { type: Type.ARRAY, items: { type: Type.STRING } }
+                      },
+                      required: ["role", "company", "period", "description"]
+                    }
+                  },
+                  education: {
+                    type: Type.ARRAY,
+                    items: {
+                      type: Type.OBJECT,
+                      properties: {
+                        degree: { type: Type.STRING },
+                        institution: { type: Type.STRING },
+                        location: { type: Type.STRING },
+                        period: { type: Type.STRING },
+                        details: { type: Type.STRING }
+                      },
+                      required: ["degree", "institution", "period"]
+                    }
+                  },
+                  skills: {
+                    type: Type.ARRAY,
+                    items: {
+                      type: Type.OBJECT,
+                      properties: {
+                        category: { type: Type.STRING },
+                        items: { type: Type.ARRAY, items: { type: Type.STRING } }
+                      },
+                      required: ["category", "items"]
+                    }
+                  },
+                  projects: {
+                    type: Type.ARRAY,
+                    items: {
+                      type: Type.OBJECT,
+                      properties: {
+                        name: { type: Type.STRING },
+                        description: { type: Type.STRING },
+                        technologies: { type: Type.ARRAY, items: { type: Type.STRING } },
+                        link: { type: Type.STRING }
+                      },
+                      required: ["name", "description", "technologies"]
+                    }
+                  },
+                  languages: {
+                    type: Type.ARRAY,
+                    items: { type: Type.STRING }
+                  },
+                  certifications: {
+                    type: Type.ARRAY,
+                    items: { type: Type.STRING }
+                  },
+                  references: {
+                    type: Type.ARRAY,
+                    items: {
+                      type: Type.OBJECT,
+                      properties: {
+                        name: { type: Type.STRING },
+                        title: { type: Type.STRING },
+                        company: { type: Type.STRING },
+                        email: { type: Type.STRING },
+                        phone: { type: Type.STRING },
+                        relationship: { type: Type.STRING }
+                      },
+                      required: ["name"]
+                    }
+                  }
+                },
+                required: ["contact", "summary", "experience", "education", "skills", "projects"]
+              },
               coverLetter: { type: Type.STRING },
               analysis: {
                 type: Type.OBJECT,
