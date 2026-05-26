@@ -144,8 +144,8 @@ async function startServer() {
           - Refactor the professional summary to highlight the candidate's core value proposition for this target role.
           - Refactor work experience. Rewrite experience bullet points to emphasize skills, technologies, and achievements relevant to the job description. Quantify achievements using the STAR method (e.g., "Increased performance by 25% by implementing X").
           - Extract and category skills (e.g., Languages, Frameworks, Developer Tools, Design, Soft Skills). Ensure skills required by the job description are included if they align with the candidate's experience.
-          - Extract ALL projects from the current resume without omitting any. Even if a project is not directly relevant to the job description, include it. Refactor each project to highlight the tech stack used and accomplishments.
-          - Extract certifications and languages if present in the current resume.
+          - DO NOT hallucinate or invent projects. Extract ALL projects from the current resume without omitting any. If the original resume has no projects, return an empty array for projects.
+          - DO NOT hallucinate languages or certifications. Extract certifications and languages ONLY if present in the current resume. If not, omit these fields or return empty arrays.
           - Extract ALL references from the current resume. For each reference include their full name, job title, company/organisation, and contact details (email and/or phone) if provided. If a reference says "Available on request", include that as a single reference entry with name set to "Available on request" and other fields empty.
           - The returned JSON must match the required schema exactly.
 
@@ -221,27 +221,6 @@ async function startServer() {
                       required: ["category", "items"]
                     }
                   },
-                  projects: {
-                    type: Type.ARRAY,
-                    items: {
-                      type: Type.OBJECT,
-                      properties: {
-                        name: { type: Type.STRING },
-                        description: { type: Type.STRING },
-                        technologies: { type: Type.ARRAY, items: { type: Type.STRING } },
-                        link: { type: Type.STRING }
-                      },
-                      required: ["name", "description", "technologies"]
-                    }
-                  },
-                  languages: {
-                    type: Type.ARRAY,
-                    items: { type: Type.STRING }
-                  },
-                  certifications: {
-                    type: Type.ARRAY,
-                    items: { type: Type.STRING }
-                  },
                   references: {
                     type: Type.ARRAY,
                     items: {
@@ -258,7 +237,7 @@ async function startServer() {
                     }
                   }
                 },
-                required: ["contact", "summary", "experience", "education", "skills", "projects"]
+                required: ["contact", "summary", "experience", "education", "skills"]
               },
               coverLetter: { type: Type.STRING },
               analysis: {

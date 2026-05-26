@@ -63,7 +63,7 @@ interface TailoredResume {
   experience: WorkExperience[];
   education: Education[];
   skills: SkillCategory[];
-  projects: Project[];
+  projects?: Project[];
   languages?: string[];
   certifications?: string[];
   references?: Reference[];
@@ -203,13 +203,15 @@ const formatResumeToMarkdown = (resume: TailoredResume): string => {
     md += `**${skill.category}**: ${skill.items.join(', ')}\n\n`;
   });
   
-  md += `## Projects\n\n`;
-  resume.projects.forEach(proj => {
-    md += `### ${proj.name}\n`;
-    if (proj.link) md += `*Link: ${proj.link}* | `;
-    md += `*Tech Stack: ${proj.technologies.join(', ')}*\n`;
-    md += `${proj.description}\n\n`;
-  });
+  if (resume.projects && resume.projects.length > 0) {
+    md += `## Projects\n\n`;
+    resume.projects.forEach(proj => {
+      md += `### ${proj.name}\n`;
+      if (proj.link) md += `*Link: ${proj.link}* | `;
+      md += `*Tech Stack: ${proj.technologies.join(', ')}*\n`;
+      md += `${proj.description}\n\n`;
+    });
+  }
   
   if (resume.education && resume.education.length > 0) {
     md += `## Education\n\n`;
@@ -946,36 +948,38 @@ export default function ResumeBuilder() {
                               </div>
 
                               {/* Key Projects */}
-                              <div className="space-y-4">
-                                <h3 className={`text-xs font-bold uppercase tracking-wider border-b pb-1`} style={{ color: currentTheme.primary, borderColor: `${currentTheme.primary}10` }}>
-                                  Projects
-                                </h3>
+                              {data.tailoredResume.projects && data.tailoredResume.projects.length > 0 && (
                                 <div className="space-y-4">
-                                  {data.tailoredResume.projects.map((proj, i) => (
-                                    <div key={i} className="space-y-1.5 break-inside-avoid">
-                                      <div className="flex justify-between items-baseline">
-                                        <h4 className="text-[12px] font-bold text-slate-800">{proj.name}</h4>
-                                        {proj.link && (
-                                          <span className="text-[10px] text-slate-400 hover:underline">{proj.link}</span>
-                                        )}
+                                  <h3 className={`text-xs font-bold uppercase tracking-wider border-b pb-1`} style={{ color: currentTheme.primary, borderColor: `${currentTheme.primary}10` }}>
+                                    Projects
+                                  </h3>
+                                  <div className="space-y-4">
+                                    {data.tailoredResume.projects.map((proj, i) => (
+                                      <div key={i} className="space-y-1.5 break-inside-avoid">
+                                        <div className="flex justify-between items-baseline">
+                                          <h4 className="text-[12px] font-bold text-slate-800">{proj.name}</h4>
+                                          {proj.link && (
+                                            <span className="text-[10px] text-slate-400 hover:underline">{proj.link}</span>
+                                          )}
+                                        </div>
+                                        <div className="flex flex-wrap gap-1">
+                                          {proj.technologies.map((tech, idx) => (
+                                            <span 
+                                              key={idx} 
+                                              className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase bg-slate-50 text-slate-500 border border-slate-100"
+                                            >
+                                              {tech}
+                                            </span>
+                                          ))}
+                                        </div>
+                                        <p className="text-[11px] text-slate-600 leading-relaxed">
+                                          {proj.description}
+                                        </p>
                                       </div>
-                                      <div className="flex flex-wrap gap-1">
-                                        {proj.technologies.map((tech, idx) => (
-                                          <span 
-                                            key={idx} 
-                                            className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase bg-slate-50 text-slate-500 border border-slate-100"
-                                          >
-                                            {tech}
-                                          </span>
-                                        ))}
-                                      </div>
-                                      <p className="text-[11px] text-slate-600 leading-relaxed">
-                                        {proj.description}
-                                      </p>
-                                    </div>
-                                  ))}
+                                    ))}
+                                  </div>
                                 </div>
-                              </div>
+                              )}
 
                             </div>
                           </div>
@@ -1093,36 +1097,38 @@ export default function ResumeBuilder() {
                             </div>
 
                             {/* Projects */}
-                            <div className="space-y-4">
-                              <h3 className="text-xs font-bold uppercase tracking-wider border-b pb-1" style={{ color: currentTheme.primary }}>
-                                Key Projects
-                              </h3>
+                            {data.tailoredResume.projects && data.tailoredResume.projects.length > 0 && (
                               <div className="space-y-4">
-                                {data.tailoredResume.projects.map((proj, i) => (
-                                  <div key={i} className="space-y-1.5 break-inside-avoid">
-                                    <div className="flex justify-between items-baseline">
-                                      <h4 className="text-[12px] font-bold text-slate-800">{proj.name}</h4>
-                                      {proj.link && (
-                                        <span className="text-[10px] text-slate-400 hover:underline">{proj.link}</span>
-                                      )}
+                                <h3 className="text-xs font-bold uppercase tracking-wider border-b pb-1" style={{ color: currentTheme.primary }}>
+                                  Key Projects
+                                </h3>
+                                <div className="space-y-4">
+                                  {data.tailoredResume.projects.map((proj, i) => (
+                                    <div key={i} className="space-y-1.5 break-inside-avoid">
+                                      <div className="flex justify-between items-baseline">
+                                        <h4 className="text-[12px] font-bold text-slate-800">{proj.name}</h4>
+                                        {proj.link && (
+                                          <span className="text-[10px] text-slate-400 hover:underline">{proj.link}</span>
+                                        )}
+                                      </div>
+                                      <div className="flex flex-wrap gap-1">
+                                        {proj.technologies.map((tech, idx) => (
+                                          <span 
+                                            key={idx} 
+                                            className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase bg-slate-50 text-slate-500 border border-slate-100"
+                                          >
+                                            {tech}
+                                          </span>
+                                        ))}
+                                      </div>
+                                      <p className="text-[11px] text-slate-600 leading-relaxed">
+                                        {proj.description}
+                                      </p>
                                     </div>
-                                    <div className="flex flex-wrap gap-1">
-                                      {proj.technologies.map((tech, idx) => (
-                                        <span 
-                                          key={idx} 
-                                          className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase bg-slate-50 text-slate-500 border border-slate-100"
-                                        >
-                                          {tech}
-                                        </span>
-                                      ))}
-                                    </div>
-                                    <p className="text-[11px] text-slate-600 leading-relaxed">
-                                      {proj.description}
-                                    </p>
-                                  </div>
-                                ))}
+                                  ))}
+                                </div>
                               </div>
-                            </div>
+                            )}
 
                             {/* Education, Certifications, Languages in 3 cols */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2 border-t border-slate-100">
@@ -1141,28 +1147,32 @@ export default function ResumeBuilder() {
                               </div>
                               
                               {/* Certifications */}
-                              <div className="space-y-2.5 break-inside-avoid">
-                                <h3 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 pb-0.5 border-b border-slate-100">
-                                  Certifications
-                                </h3>
-                                <ul className="space-y-1 text-[11px] text-slate-600">
-                                  {data.tailoredResume.certifications?.map((cert, i) => (
-                                    <li key={i} className="truncate">• {cert}</li>
-                                  ))}
-                                </ul>
-                              </div>
+                              {data.tailoredResume.certifications && data.tailoredResume.certifications.length > 0 && (
+                                <div className="space-y-2.5 break-inside-avoid">
+                                  <h3 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 pb-0.5 border-b border-slate-100">
+                                    Certifications
+                                  </h3>
+                                  <ul className="space-y-1 text-[11px] text-slate-600">
+                                    {data.tailoredResume.certifications?.map((cert, i) => (
+                                      <li key={i} className="truncate">• {cert}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
 
                               {/* Languages */}
-                              <div className="space-y-2.5 break-inside-avoid">
-                                <h3 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 pb-0.5 border-b border-slate-100">
-                                  Languages
-                                </h3>
-                                <ul className="space-y-1 text-[11px] text-slate-600">
-                                  {data.tailoredResume.languages?.map((lang, i) => (
-                                    <li key={i}>• {lang}</li>
-                                  ))}
-                                </ul>
-                              </div>
+                              {data.tailoredResume.languages && data.tailoredResume.languages.length > 0 && (
+                                <div className="space-y-2.5 break-inside-avoid">
+                                  <h3 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 pb-0.5 border-b border-slate-100">
+                                    Languages
+                                  </h3>
+                                  <ul className="space-y-1 text-[11px] text-slate-600">
+                                    {data.tailoredResume.languages?.map((lang, i) => (
+                                      <li key={i}>• {lang}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
                             </div>
 
                             {/* References Section (single column) */}
