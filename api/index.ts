@@ -43,6 +43,12 @@ app.post("/api/extract-text", upload.single("file"), async (req, res) => {
     if (fileType === "application/pdf" || fileName.toLowerCase().endsWith(".pdf")) {
       try {
         console.log("Attempting local PDF extraction...");
+        
+        // Polyfill DOMMatrix for modern Node.js environments (Vercel)
+        if (typeof global.DOMMatrix === 'undefined') {
+          (global as any).DOMMatrix = class DOMMatrix { constructor() { return {}; } };
+        }
+        
         const { PDFParse } = require("pdf-parse");
         if (!PDFParse) {
           throw new Error("Could not resolve PDFParse from pdf-parse.");
@@ -56,7 +62,7 @@ app.post("/api/extract-text", upload.single("file"), async (req, res) => {
         console.warn("Local PDF extraction failed, trying Gemini fallback...", localPdfErr);
         try {
           const response = await ai.models.generateContent({
-            model: "gemini-3.5-flash",
+            model: "gemini-1.5-flash",
             contents: {
               parts: [
                 {
@@ -121,7 +127,7 @@ app.post("/api/tailor-resume", async (req, res) => {
     }
 
     const response = await ai.models.generateContent({
-      model: "gemini-3.5-flash",
+      model: "gemini-1.5-flash",
       contents: `
         You are an expert resume writer and career coach. 
         I will provide a user's current resume and a job description. 
