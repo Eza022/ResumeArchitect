@@ -3,9 +3,6 @@ import { GoogleGenAI, Type } from "@google/genai";
 import dotenv from "dotenv";
 import multer from "multer";
 import mammoth from "mammoth";
-import { createRequire } from "module";
-
-const require = createRequire(import.meta.url);
 
 dotenv.config();
 
@@ -41,51 +38,33 @@ app.post("/api/extract-text", upload.single("file"), async (req, res) => {
     console.log(`Processing file: ${fileName} (${fileType})`);
 
     if (fileType === "application/pdf" || fileName.toLowerCase().endsWith(".pdf")) {
+      // Use Gemini's native PDF understanding — no local worker needed (works on Vercel)
       try {
-        console.log("Attempting local PDF extraction...");
-        
-        // Polyfill DOMMatrix for modern Node.js environments (Vercel)
-        if (typeof global.DOMMatrix === 'undefined') {
-          (global as any).DOMMatrix = class DOMMatrix { constructor() { return {}; } };
-        }
-        
-        const { PDFParse } = require("pdf-parse");
-        if (!PDFParse) {
-          throw new Error("Could not resolve PDFParse from pdf-parse.");
-        }
-        const parser = new PDFParse({ data: req.file.buffer });
-        const data = await parser.getText();
-        await parser.destroy();
-        text = data.text;
-        console.log(`Local PDF extraction succeeded. Extracted ${text?.length || 0} characters.`);
-      } catch (localPdfErr: any) {
-        console.warn("Local PDF extraction failed, trying Gemini fallback...", localPdfErr);
-        try {
-          const response = await ai.models.generateContent({
-            model: "gemini-1.5-flash",
-            contents: {
-              parts: [
-                {
-                  inlineData: {
-                    mimeType: "application/pdf",
-                    data: req.file.buffer.toString("base64")
-                  }
-                },
-                {
-                  text: "Extract all text from this resume PDF faithfully. Maintain a logical order. Output ONLY the extracted text content."
+        console.log("Extracting PDF text via Gemini...");
+        const response = await ai.models.generateContent({
+          model: "gemini-2.5-flash",
+          contents: {
+            parts: [
+              {
+                inlineData: {
+                  mimeType: "application/pdf",
+                  data: req.file.buffer.toString("base64")
                 }
-              ]
-            }
-          });
-          text = response.text || "";
-          console.log(`Gemini PDF fallback succeeded. Extracted ${text?.length || 0} characters.`);
-        } catch (pdfErr: any) {
-          console.error("Gemini PDF Extraction Error:", pdfErr);
-          if (pdfErr.status === 503 || pdfErr.message?.includes("503")) {
-            throw new Error("The AI extraction service is busy. Please try again in a few moments or paste your CV manually.");
+              },
+              {
+                text: "Extract all text from this resume PDF faithfully. Maintain a logical order. Output ONLY the extracted text content, no commentary."
+              }
+            ]
           }
-          throw new Error(`Failed to extract text from PDF. Error: ${localPdfErr.message || localPdfErr}. Fallback: ${pdfErr.message || pdfErr}`);
+        });
+        text = response.text || "";
+        console.log(`Gemini PDF extraction succeeded. Extracted ${text?.length || 0} characters.`);
+      } catch (pdfErr: any) {
+        console.error("Gemini PDF Extraction Error:", pdfErr);
+        if (pdfErr.status === 503 || pdfErr.message?.includes("503")) {
+          throw new Error("The AI extraction service is busy. Please try again in a few moments or paste your CV manually.");
         }
+        throw new Error(`Failed to extract text from PDF: ${pdfErr.message || pdfErr}`);
       }
     } else if (
       fileType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
@@ -127,7 +106,7 @@ app.post("/api/tailor-resume", async (req, res) => {
     }
 
     const response = await ai.models.generateContent({
-      model: "gemini-1.5-flash",
+      model: "gemini-2.5-flash",
       contents: `
         You are an expert resume writer and career coach. 
         I will provide a user's current resume and a job description. 
