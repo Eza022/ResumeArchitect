@@ -9,12 +9,6 @@ import {
 } from '@react-pdf/renderer';
 import type { TailoredResume } from './ResumeBuilder';
 
-// Register fonts for better compatibility
-Font.register({
-  family: 'Helvetica',
-  src: 'https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHAPMtMapQpBw.ttf',
-});
-
 const styles = StyleSheet.create({
   page: {
     padding: 40,
@@ -24,20 +18,20 @@ const styles = StyleSheet.create({
   container: {
     display: 'flex',
     flexDirection: 'row',
-    height: '100%',
   },
   // LEFT SIDEBAR
   sidebar: {
-    width: '35%',
-    paddingRight: 20,
+    flex: 0.34,
+    paddingRight: 16,
     borderRightWidth: 1,
     borderRightColor: '#E2E8F0',
     backgroundColor: '#F8FAFC',
     paddingTop: 0,
+    paddingLeft: 6,
   },
   // RIGHT MAIN CONTENT
   mainContent: {
-    width: '65%',
+    flex: 0.66,
     paddingLeft: 20,
     display: 'flex',
     flexDirection: 'column',
@@ -107,8 +101,14 @@ const styles = StyleSheet.create({
     marginBottom: 6,
     fontSize: 8.5,
     color: '#475569',
-    wordBreak: 'break-word',
+    wordBreak: 'break-all',
     flexWrap: 'wrap',
+  },
+  contactLinkText: {
+    fontSize: 8.5,
+    color: '#475569',
+    wordBreak: 'break-all',
+    maxWidth: '95%',
   },
   contactLabel: {
     fontWeight: 'bold',
@@ -266,7 +266,7 @@ export const ResumePDF: React.FC<ResumePDFProps> = ({ resume, accentColor = '#4F
           {/* LEFT SIDEBAR */}
           <View style={styles.sidebar}>
             {/* Contact Info */}
-            <View style={{ marginBottom: 16 }}>
+            <View style={{ marginBottom: 28 }}>
               <Text style={styles.sidebarSectionHeader}>Contact</Text>
               <View style={styles.contactItem}>
                 <Text style={styles.normalText}>{resume.contact.email}</Text>
@@ -279,17 +279,17 @@ export const ResumePDF: React.FC<ResumePDFProps> = ({ resume, accentColor = '#4F
               </View>
               {resume.contact.website && (
                 <View style={styles.contactItem}>
-                  <Text style={styles.normalText}>{resume.contact.website}</Text>
+                  <Text style={styles.contactLinkText}>{resume.contact.website}</Text>
                 </View>
               )}
               {resume.contact.linkedin && (
-                <View style={styles.contactItem}>
-                  <Text style={styles.normalText}>{resume.contact.linkedin.substring(0, 50)}...</Text>
+                <View style={[styles.contactItem, { maxWidth: '100%' }]}>
+                  <Text style={[styles.contactLinkText, { maxWidth: '100%' }]}>{resume.contact.linkedin}</Text>
                 </View>
               )}
               {resume.contact.github && (
                 <View style={styles.contactItem}>
-                  <Text style={styles.normalText}>{resume.contact.github}</Text>
+                  <Text style={styles.contactLinkText}>{resume.contact.github}</Text>
                 </View>
               )}
             </View>

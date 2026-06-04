@@ -8,6 +8,8 @@ import {
   Edit, Save, X, Plus, Trash2
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import { pdf, Document, Page, Text, StyleSheet } from '@react-pdf/renderer';
+import { ResumePDF as ResumePDFDocument } from './ResumePDF';
 
 interface ContactInfo {
   name: string;
@@ -58,7 +60,7 @@ interface Reference {
 }
 
 
-interface TailoredResume {
+export interface TailoredResume {
   contact: ContactInfo;
   summary: string;
   experience: WorkExperience[];
@@ -173,7 +175,7 @@ const FONT_PAIRS = {
   }
 };
 
-const formatResumeToMarkdown = (resume: TailoredResume): string => {
+export const formatResumeToMarkdown = (resume: TailoredResume): string => {
   let md = `# ${resume.contact.name}\n`;
   md += `**${resume.contact.title}**\n\n`;
   md += `✉️ ${resume.contact.email} | 📞 ${resume.contact.phone} | 📍 ${resume.contact.location}\n`;
@@ -240,6 +242,35 @@ const formatResumeToMarkdown = (resume: TailoredResume): string => {
 
   return md;
 };
+
+const pdfExportStyles = StyleSheet.create({
+  page: {
+    padding: 40,
+    fontFamily: 'Helvetica',
+    fontSize: 11,
+    lineHeight: 1.5,
+    color: '#0F172A',
+  },
+  header: {
+    fontSize: 18,
+    marginBottom: 20,
+    fontWeight: 'bold',
+  },
+  body: {
+    fontSize: 11,
+    lineHeight: 1.6,
+    whiteSpace: 'pre-wrap',
+  },
+});
+
+const createTextDocument = (title: string, content: string) => (
+  <Document>
+    <Page size="A4" style={pdfExportStyles.page}>
+      <Text style={pdfExportStyles.header}>{title}</Text>
+      <Text style={pdfExportStyles.body}>{content}</Text>
+    </Page>
+  </Document>
+);
 
 export default function ResumeBuilder() {
   const [currentResume, setCurrentResume] = useState('');
@@ -419,8 +450,6 @@ export default function ResumeBuilder() {
     }
 
     try {
-      const html2pdf = (await import('html2pdf.js')).default;
-      
       const candidateName = data.tailoredResume.contact.name || 'Tailored';
       const fileName = activeTab === 'resume' 
         ? `${candidateName.replace(/\s+/g, '_')}_Resume.pdf` 
@@ -428,23 +457,35 @@ export default function ResumeBuilder() {
           ? `${candidateName.replace(/\s+/g, '_')}_Cover_Letter.pdf` 
           : 'Job_Fit_Analysis.pdf';
 
-      const opt = {
-        margin:       0,
-        filename:     fileName,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { 
-          scale: 2.5, // Crisp retina-quality rendering
-          useCORS: true, 
-          logging: false,
-          letterRendering: true,
-          scrollX: 0,
-          scrollY: 0
-        },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak:    { mode: ['css', 'legacy'] }
-      };
+      let blob: Blob | null = null;
 
-      await html2pdf().from(element).set(opt).save();
+      if (activeTab === 'resume') {
+        blob = await pdf(
+          <ResumePDFDocument
+            resume={data.tailoredResume}
+            accentColor={currentTheme.primary}
+            fontPair={fontPair}
+          />
+        ).toBlob();
+      } else if (activeTab === 'letter') {
+        const title = `${candidateName} Cover Letter`;
+        blob = await pdf(createTextDocument(title, data.coverLetter)).toBlob();
+      } else {
+        blob = await pdf(createTextDocument('Job Fit Analysis', data.analysis.keyImprovements)).toBlob();
+      }
+
+      if (!blob) {
+        throw new Error('Unable to generate PDF file.');
+      }
+
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
     } catch (err) {
       console.error('PDF Export Error:', err);
       setError('Failed to generate PDF. Please try again.');
