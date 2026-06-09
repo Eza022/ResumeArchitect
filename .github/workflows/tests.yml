@@ -24,15 +24,4 @@ jobs:
         run: npm ci
 
       - name: Run tests
-        run: npm test -- --reporter=verbose
-
-      - name: Run tests with coverage
-        run: npm test -- --coverage
-
-      - name: Upload coverage reports
-        uses: codecov/codecov-action@v3
-        if: always()
-        with:
-          files: ./coverage/coverage-final.json
-          flags: unittests
-          name: codecov-umbrella
+        run: npm test
