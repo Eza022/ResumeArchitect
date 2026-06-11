@@ -11,215 +11,235 @@ import type { TailoredResume } from './ResumeBuilder';
 
 const styles = StyleSheet.create({
   page: {
-    paddingTop: 45,
-    paddingBottom: 45,
-    paddingLeft: 45,
-    paddingRight: 45,
     fontFamily: 'Helvetica',
     backgroundColor: '#FFFFFF',
+    padding: 0,
+    display: 'flex',
+    flexDirection: 'row',
+  },
+  // Deep navy-slate sidebar matching exclusive templates
+  sidebar: {
+    width: '32%',
+    backgroundColor: '#2E3544',
+    color: '#FFFFFF',
+    paddingTop: 30,
+    paddingBottom: 30,
+    paddingLeft: 16,
+    paddingRight: 16,
+    borderLeftWidth: 10, // Leftmost vertical vibrant colorful focus accent strip
     display: 'flex',
     flexDirection: 'column',
   },
-  // Document Header in Clean Minimalism style
-  headerContainer: {
+  // Main right-hand body section
+  mainContent: {
+    width: '68%',
+    backgroundColor: '#FFFFFF',
+    paddingTop: 30,
+    paddingBottom: 30,
+    paddingLeft: 24,
+    paddingRight: 24,
     display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E2E8F0',
-    paddingBottom: 15,
-    marginBottom: 16,
+    flexDirection: 'column',
   },
-  headerLeft: {
-    flex: 1,
+  
+  // Left Column Sidebar Components
+  sidebarSection: {
+    marginBottom: 20,
   },
-  headerRight: {
-    width: 44,
-    height: 44,
-    backgroundColor: '#0F172A',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 4,
-  },
-  monogramText: {
-    color: '#FFFFFF',
-    fontSize: 16,
+  sidebarTitle: {
+    fontSize: 11,
     fontWeight: 'bold',
-    fontStyle: 'italic',
+    color: '#FFFFFF',
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+    borderBottomWidth: 1.5,
+    borderBottomColor: '#4A5568',
+    paddingBottom: 5,
+    marginBottom: 10,
+  },
+  sidebarContactItem: {
+    marginBottom: 10,
+  },
+  sidebarContactLabel: {
+    fontSize: 8,
+    fontWeight: 'bold',
+    color: '#94A3B8',
+    textTransform: 'uppercase',
+    marginBottom: 2,
+    letterSpacing: 0.3,
+  },
+  sidebarContactValue: {
+    fontSize: 8.5,
+    color: '#FFFFFF',
+    lineHeight: 1.35,
+  },
+  sidebarContactLink: {
+    fontSize: 8.5,
+    color: '#FFFFFF',
+    textDecoration: 'none',
+    lineHeight: 1.25,
+  },
+  sidebarSkillCategory: {
+    fontSize: 8,
+    fontWeight: 'bold',
+    color: '#CBD5E1',
+    textTransform: 'uppercase',
+    marginTop: 6,
+    marginBottom: 2,
+  },
+  sidebarSkillItem: {
+    fontSize: 8.5,
+    color: '#E2E8F0',
+    lineHeight: 1.3,
+    marginBottom: 5,
+  },
+  sidebarAwardItem: {
+    marginBottom: 8,
+  },
+  sidebarAwardHeader: {
+    fontSize: 7.5,
+    color: '#94A3B8',
+    textTransform: 'uppercase',
+    marginBottom: 2,
+  },
+  sidebarAwardName: {
+    fontSize: 8.5,
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    lineHeight: 1.25,
+  },
+
+  // Main Right Column Layout
+  headerContainer: {
+    marginBottom: 24,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
   },
   candidateName: {
-    fontSize: 22,
+    fontSize: 26,
     fontWeight: 'bold',
-    color: '#0F172A',
-    letterSpacing: 0.5,
-    marginBottom: 3,
+    color: '#1E293B',
+    letterSpacing: -0.5,
+    marginBottom: 2,
   },
   candidateTitle: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: 'bold',
     letterSpacing: 1.5,
     textTransform: 'uppercase',
-    color: '#4F46E5', // overridden dynamically
-  },
-  contactRow: {
-    display: 'flex',
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginTop: 6,
-    fontSize: 8.5,
     color: '#64748B',
   },
-  contactDivider: {
-    color: '#CBD5E1',
-  },
-  contactLink: {
-    color: '#0F172A',
-    textDecoration: 'none',
-  },
   
-  // Section Header with Left-Border Accent
+  sectionContainer: {
+    marginBottom: 20,
+  },
   sectionHeader: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: 'bold',
-    letterSpacing: 1.2,
     textTransform: 'uppercase',
-    color: '#0F172A',
-    paddingLeft: 8,
-    borderLeftWidth: 2,
-    borderLeftColor: '#0F172A', // overridden dynamically
-    marginTop: 18,
-    marginBottom: 10,
-    paddingTop: 1,
-    paddingBottom: 1,
-  },
-  
-  // Paragraph Content
-  summaryText: {
-    fontSize: 9,
-    lineHeight: 1.5,
-    color: '#334155',
-    textAlign: 'justify',
-    marginBottom: 8,
-  },
-  
-  // Work History Blocks
-  experienceItem: {
+    letterSpacing: 0.8,
+    color: '#1E293B',
+    borderBottomWidth: 1.5,
+    borderBottomColor: '#E2E8F0',
+    paddingBottom: 5,
     marginBottom: 12,
   },
-  experienceHeader: {
+  summaryText: {
+    fontSize: 8.5,
+    lineHeight: 1.5,
+    color: '#475569',
+    textAlign: 'justify',
+  },
+
+  // Dual-column format for each experience/education listing
+  itemRow: {
     display: 'flex',
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 4,
+    marginBottom: 14,
+  },
+  itemLeftCol: {
+    width: '32%',
+    paddingRight: 10,
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  itemRightCol: {
+    width: '68%',
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  periodText: {
+    fontSize: 9,
+    fontWeight: 'bold',
+    color: '#475569',
+    lineHeight: 1.3,
+  },
+  companyText: {
+    fontSize: 8.5,
+    color: '#64748B',
+    marginTop: 2,
+    lineHeight: 1.25,
+  },
+  locationText: {
+    fontSize: 8,
+    color: '#94A3B8',
+    fontStyle: 'italic',
+    marginTop: 1,
   },
   roleText: {
     fontSize: 10,
     fontWeight: 'bold',
-    color: '#0F172A',
-  },
-  companyText: {
-    fontSize: 9,
-    fontWeight: 'bold',
-    color: '#475569',
-    marginTop: 1,
-  },
-  periodText: {
-    fontSize: 8.5,
-    fontWeight: 'bold',
-    color: '#4F46E5', // overridden dynamically
-    textAlign: 'right',
+    color: '#1E293B',
+    marginBottom: 4,
   },
   bulletPointContainer: {
     display: 'flex',
     flexDirection: 'row',
     marginBottom: 3,
-    paddingLeft: 4,
+    paddingLeft: 2,
   },
   bulletPointDot: {
     fontSize: 9,
-    marginRight: 6,
-    color: '#64748B',
-    marginTop: 1,
+    marginRight: 5,
+    color: '#94A3B8',
+    marginTop: 0.5,
   },
   bulletPointText: {
-    fontSize: 9,
-    color: '#334155',
+    fontSize: 8.5,
+    color: '#475569',
     lineHeight: 1.45,
     flex: 1,
   },
-  
-  // Education Blocks
-  educationItem: {
-    marginBottom: 8,
-  },
-  educationHeader: {
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 2,
-  },
+
+  // Education Styles
   degreeText: {
     fontSize: 10,
     fontWeight: 'bold',
-    color: '#0F172A',
+    color: '#1E293B',
   },
-  institutionText: {
-    fontSize: 9,
-    color: '#334155',
-  },
-  locationText: {
+  eduDetails: {
     fontSize: 8.5,
-    color: '#64748B',
-    fontStyle: 'italic',
+    color: '#475569',
+    marginTop: 3,
+    lineHeight: 1.35,
   },
-  
-  // Skills Blocks
-  skillsGrid: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 5,
-    marginBottom: 6,
-  },
-  skillRow: {
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    fontSize: 9,
-  },
-  skillCategory: {
-    width: 110,
-    fontWeight: 'bold',
-    color: '#0F172A',
-    textTransform: 'uppercase',
-    fontSize: 8.5,
-    letterSpacing: 0.5,
-  },
-  skillItemsText: {
-    flex: 1,
-    color: '#334155',
-    lineHeight: 1.3,
-  },
-  
-  // Projects Component
+
+  // Projects Styles (Nested format matching Experience)
   projectItem: {
     marginBottom: 10,
   },
-  projectHeader: {
+  projectHeaderDetail: {
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'baseline',
-    marginBottom: 2,
+    marginBottom: 3,
   },
   projectName: {
-    fontSize: 10,
+    fontSize: 9.5,
     fontWeight: 'bold',
-    color: '#0F172A',
+    color: '#1E293B',
   },
   projectTech: {
     fontSize: 8,
@@ -227,36 +247,18 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
   },
   projectLinkText: {
-    fontSize: 8.5,
-    color: '#4F46E5', // overridden dynamically
+    fontSize: 8,
+    color: '#4F46E5', // overridden dynamically below
     textDecoration: 'none',
+    marginBottom: 3,
   },
   projectDesc: {
-    fontSize: 9,
-    color: '#334155',
-    lineHeight: 1.4,
-  },
-  
-  // Simple Horizontal Badges for Certifications/Languages
-  badgeList: {
-    display: 'flex',
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
-    marginBottom: 6,
-  },
-  badgeItem: {
     fontSize: 8.5,
-    backgroundColor: '#F8FAFC',
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
-    borderRadius: 3,
-    paddingVertical: 2,
-    paddingHorizontal: 6,
-    color: '#334155',
+    color: '#475569',
+    lineHeight: 1.35,
   },
-  
-  // Clean references columns
+
+  // References component - clean side by side grid
   referencesGrid: {
     display: 'flex',
     flexDirection: 'row',
@@ -270,35 +272,40 @@ const styles = StyleSheet.create({
   refName: {
     fontSize: 9.5,
     fontWeight: 'bold',
-    color: '#0F172A',
-    marginBottom: 1,
+    color: '#1E293B',
+    marginBottom: 2,
   },
   refDetail: {
-    fontSize: 8.5,
+    fontSize: 8,
     color: '#475569',
     lineHeight: 1.3,
   },
+  refContact: {
+    fontSize: 8,
+    color: '#334155',
+    fontWeight: 'bold',
+    marginTop: 2,
+    lineHeight: 1.3,
+  },
 
-  // Document Footer (Page count / Confidential indicator)
   footerContainer: {
     position: 'absolute',
-    bottom: 25,
-    left: 45,
-    right: 45,
-    borderTopWidth: 1,
-    borderTopColor: '#F1F5F9',
-    paddingTop: 8,
+    bottom: 12,
+    left: 24,
+    right: 24,
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    borderTopWidth: 0.5,
+    borderTopColor: '#E2E8F0',
+    paddingTop: 4,
   },
   footerText: {
-    fontSize: 7.5,
+    fontSize: 7,
     color: '#94A3B8',
-    textTransform: 'uppercase',
     letterSpacing: 0.5,
-  },
+  }
 });
 
 interface ResumePDFProps {
@@ -314,246 +321,248 @@ export const ResumePDF: React.FC<ResumePDFProps> = ({
   fontPair = 'outfit',
   layoutStyle = 'single'
 }) => {
-  // Helper to extract Name Initials for the elegant Vanguard-style signature monogram box
-  const getInitials = (name: string): string => {
-    if (!name) return 'V';
-    const parts = name.trim().split(/\s+/);
-    if (parts.length >= 2) {
-      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-    }
-    return name.slice(0, 2).toUpperCase();
-  };
-
-  const initials = getInitials(resume.contact.name);
-
-  // Dynamic overrides
-  const dynamicStyles = {
-    titleAccent: { color: accentColor },
-    leftBorderAccent: { borderLeftColor: accentColor },
-    periodTextAccent: { color: accentColor },
-    linkAccent: { color: accentColor },
-  };
-
   const hasProjects = resume.projects && resume.projects.length > 0;
   const hasCertifications = resume.certifications && resume.certifications.length > 0;
   const hasLanguages = resume.languages && resume.languages.length > 0;
   const hasReferences = resume.references && resume.references.length > 0;
 
+  // Dynamic overrides
+  const dynamicStyles = {
+    titleAccent: { color: accentColor },
+    borderLeftColor: { borderLeftColor: accentColor },
+    linkAccent: { color: accentColor },
+  };
+
   return (
     <Document>
-      {/* 
-        Single or multi-page layout. 
-        Using standard Helvetica page flow so that text wraps naturally 
-        without overlap or jumping behind side-columns.
-      */}
       <Page size="A4" style={styles.page}>
         
-        {/* Header Block */}
-        <View style={styles.headerContainer} wrap={false}>
-          <View style={styles.headerLeft}>
-            <Text style={styles.candidateName}>{resume.contact.name}</Text>
-            <Text style={[styles.candidateTitle, dynamicStyles.titleAccent]}>{resume.contact.title}</Text>
-            
-            <View style={styles.contactRow}>
-              <Text>{resume.contact.email}</Text>
-              <Text style={styles.contactDivider}>•</Text>
-              <Text>{resume.contact.phone}</Text>
-              <Text style={styles.contactDivider}>•</Text>
-              <Text>{resume.contact.location}</Text>
-              
-              {resume.contact.website && (
-                <>
-                  <Text style={styles.contactDivider}>•</Text>
-                  <Link src={resume.contact.website.startsWith('http') ? resume.contact.website : `https://${resume.contact.website}`} style={[styles.contactLink, styles.contactRow]}>
-                    <Text>{resume.contact.website}</Text>
-                  </Link>
-                </>
-              )}
-              {resume.contact.linkedin && (
-                <>
-                  <Text style={styles.contactDivider}>•</Text>
-                  <Link src={resume.contact.linkedin.startsWith('http') ? resume.contact.linkedin : `https://${resume.contact.linkedin}`} style={[styles.contactLink, styles.contactRow]}>
-                    <Text>LinkedIn: {resume.contact.linkedin}</Text>
-                  </Link>
-                </>
-              )}
-              {resume.contact.github && (
-                <>
-                  <Text style={styles.contactDivider}>•</Text>
-                  <Link src={resume.contact.github.startsWith('http') ? resume.contact.github : `https://${resume.contact.github}`} style={[styles.contactLink, styles.contactRow]}>
-                    <Text>GitHub: {resume.contact.github}</Text>
-                  </Link>
-                </>
-              )}
-            </View>
-          </View>
-        </View>
-
-        {/* Professional Summary */}
-        {resume.summary && (
-          <View wrap={false} style={{ marginBottom: 6 }}>
-            <Text style={[styles.sectionHeader, dynamicStyles.titleAccent, dynamicStyles.leftBorderAccent]}>
-              Executive Summary
-            </Text>
-            <Text style={styles.summaryText}>{resume.summary}</Text>
-          </View>
-        )}
-
-        {/* Core Expertise / Skills */}
-        <View wrap={false} style={{ marginBottom: 6 }}>
-          <Text style={[styles.sectionHeader, dynamicStyles.titleAccent, dynamicStyles.leftBorderAccent]}>
-            Core Expertise
-          </Text>
-          <View style={styles.skillsGrid}>
-            {resume.skills.map((skill, idx) => (
-              <View key={idx} style={styles.skillRow}>
-                <Text style={styles.skillCategory}>{skill.category}</Text>
-                <Text style={styles.skillItemsText}>{skill.items.join('  •  ')}</Text>
-              </View>
-            ))}
-          </View>
-        </View>
-
-        {/* Work Experience */}
-        <View style={{ marginBottom: 6 }}>
-          <Text style={[styles.sectionHeader, dynamicStyles.titleAccent, dynamicStyles.leftBorderAccent]}>
-            Work History
-          </Text>
+        {/* Left Column Sidebar - Deep Navy background with neon/vibrant Accent border on the extreme left */}
+        <View style={[styles.sidebar, dynamicStyles.borderLeftColor]}>
           
-          {resume.experience.map((exp, idx) => (
-            <View key={idx} style={styles.experienceItem} wrap={false}>
-              <View style={styles.experienceHeader}>
-                <View style={{ flex: 1, paddingRight: 10 }}>
-                  <Text style={styles.roleText}>{exp.role}</Text>
-                  <Text style={styles.companyText}>{exp.company} {exp.location ? `| ${exp.location}` : ''}</Text>
-                </View>
-                <Text style={[styles.periodText, dynamicStyles.periodTextAccent]}>{exp.period}</Text>
+          {/* Contact Section */}
+          <View style={styles.sidebarSection}>
+            <Text style={styles.sidebarTitle}>Contact</Text>
+            
+            {resume.contact.phone && (
+              <View style={styles.sidebarContactItem}>
+                <Text style={styles.sidebarContactLabel}>Phone</Text>
+                <Text style={styles.sidebarContactValue}>{resume.contact.phone}</Text>
               </View>
-              
-              <View style={{ marginTop: 4 }}>
-                {exp.description.map((desc, i) => {
-                  const cleanText = desc.replace(/^[•-]\s*/, '');
+            )}
+            
+            {resume.contact.email && (
+              <View style={styles.sidebarContactItem}>
+                <Text style={styles.sidebarContactLabel}>Email</Text>
+                <Text style={styles.sidebarContactValue}>{resume.contact.email}</Text>
+              </View>
+            )}
+            
+            {resume.contact.location && (
+              <View style={styles.sidebarContactItem}>
+                <Text style={styles.sidebarContactLabel}>Address</Text>
+                <Text style={styles.sidebarContactValue}>{resume.contact.location}</Text>
+              </View>
+            )}
+
+            {resume.contact.linkedin && (
+              <View style={styles.sidebarContactItem}>
+                <Text style={styles.sidebarContactLabel}>LinkedIn</Text>
+                <Link src={resume.contact.linkedin.startsWith('http') ? resume.contact.linkedin : `https://${resume.contact.linkedin}`} style={styles.sidebarContactLink}>
+                  <Text>{resume.contact.linkedin}</Text>
+                </Link>
+              </View>
+            )}
+
+            {resume.contact.github && (
+              <View style={styles.sidebarContactItem}>
+                <Text style={styles.sidebarContactLabel}>GitHub</Text>
+                <Link src={resume.contact.github.startsWith('http') ? resume.contact.github : `https://${resume.contact.github}`} style={styles.sidebarContactLink}>
+                  <Text>{resume.contact.github}</Text>
+                </Link>
+              </View>
+            )}
+
+            {resume.contact.website && (
+              <View style={styles.sidebarContactItem}>
+                <Text style={styles.sidebarContactLabel}>Website</Text>
+                <Link src={resume.contact.website.startsWith('http') ? resume.contact.website : `https://${resume.contact.website}`} style={styles.sidebarContactLink}>
+                  <Text>{resume.contact.website}</Text>
+                </Link>
+              </View>
+            )}
+          </View>
+
+          {/* Expertise Section */}
+          {resume.skills && resume.skills.length > 0 && (
+            <View style={styles.sidebarSection}>
+              <Text style={styles.sidebarTitle}>Expertise</Text>
+              {resume.skills.map((skill, idx) => (
+                <View key={idx} style={{ marginBottom: 6 }}>
+                  <Text style={styles.sidebarSkillCategory}>{skill.category}</Text>
+                  <Text style={styles.sidebarSkillItem}>{skill.items.join(', ')}</Text>
+                </View>
+              ))}
+            </View>
+          )}
+
+          {/* Language Section */}
+          {hasLanguages && (
+            <View style={styles.sidebarSection}>
+              <Text style={styles.sidebarTitle}>Language</Text>
+              {resume.languages!.map((lang, idx) => (
+                <Text key={idx} style={styles.sidebarSkillItem}>• {lang}</Text>
+              ))}
+            </View>
+          )}
+
+          {/* Awards / Certifications Section */}
+          {hasCertifications && (
+            <View style={styles.sidebarSection}>
+              <Text style={styles.sidebarTitle}>Awards</Text>
+              {resume.certifications!.map((cert, idx) => {
+                const parts = cert.split('|');
+                if (parts.length > 1) {
                   return (
-                    <View key={i} style={styles.bulletPointContainer}>
-                      <Text style={styles.bulletPointDot}>•</Text>
-                      <Text style={styles.bulletPointText}>{cleanText}</Text>
+                    <View key={idx} style={styles.sidebarAwardItem}>
+                      <Text style={styles.sidebarAwardHeader}>{parts[0].trim()}</Text>
+                      <Text style={styles.sidebarAwardName}>{parts.slice(1).join('|').trim()}</Text>
                     </View>
                   );
-                })}
-              </View>
+                }
+                return (
+                  <View key={idx} style={styles.sidebarAwardItem}>
+                    <Text style={styles.sidebarAwardName}>{cert}</Text>
+                  </View>
+                );
+              })}
             </View>
-          ))}
+          )}
+
         </View>
 
-        {/* Education */}
-        <View style={{ marginBottom: 6 }}>
-          <Text style={[styles.sectionHeader, dynamicStyles.titleAccent, dynamicStyles.leftBorderAccent]}>
-            Education
-          </Text>
-          {resume.education.map((edu, idx) => (
-            <View key={idx} style={styles.educationItem} wrap={false}>
-              <View style={styles.educationHeader}>
-                <Text style={styles.degreeText}>{edu.degree}</Text>
-                <Text style={[styles.periodText, dynamicStyles.periodTextAccent]}>{edu.period}</Text>
-              </View>
-              <Text style={styles.institutionText}>
-                {edu.institution} {edu.location ? `  |  ${edu.location}` : ''}
-              </Text>
-              {edu.details && (
-                <Text style={[styles.bulletPointText, { marginTop: 2, color: '#64748B' }]}>
-                  {edu.details}
-                </Text>
-              )}
-            </View>
-          ))}
-        </View>
+        {/* Right Column Main Body */}
+        <View style={styles.mainContent}>
+          
+          {/* Header (Candidate Name & Professional Title) */}
+          <View style={styles.headerContainer} wrap={false}>
+            <Text style={styles.candidateName}>{resume.contact.name}</Text>
+            <Text style={[styles.candidateTitle, dynamicStyles.titleAccent]}>{resume.contact.title}</Text>
+          </View>
 
-        {/* Projects */}
-        {hasProjects && (
-          <View style={{ marginBottom: 6 }}>
-            <Text style={[styles.sectionHeader, dynamicStyles.titleAccent, dynamicStyles.leftBorderAccent]}>
-              Featured Projects
-            </Text>
-            {resume.projects!.map((proj, idx) => (
-              <View key={idx} style={styles.projectItem} wrap={false}>
-                <View style={styles.projectHeader}>
-                  <Text style={styles.projectName}>{proj.name}</Text>
-                  <Text style={styles.projectTech}>Tech Stack: {proj.technologies.join(', ')}</Text>
+          {/* Profile Summary */}
+          {resume.summary && (
+            <View style={styles.sectionContainer} wrap={false}>
+              <Text style={styles.sectionHeader}>Profile</Text>
+              <Text style={styles.summaryText}>{resume.summary}</Text>
+            </View>
+          )}
+
+          {/* Experience Section */}
+          <View style={styles.sectionContainer}>
+            <Text style={styles.sectionHeader}>Experience</Text>
+            {resume.experience.map((exp, idx) => (
+              <View key={idx} style={styles.itemRow} wrap={false}>
+                <View style={styles.itemLeftCol}>
+                  <Text style={styles.periodText}>{exp.period}</Text>
+                  <Text style={styles.companyText}>{exp.company}</Text>
+                  {exp.location && <Text style={styles.locationText}>{exp.location}</Text>}
                 </View>
-                {proj.link && (
-                  <Link src={proj.link.startsWith('http') ? proj.link : `https://${proj.link}`} style={[styles.projectLinkText, dynamicStyles.linkAccent, { marginBottom: 3 }]}>
-                    <Text>Project Link: {proj.link}</Text>
-                  </Link>
-                )}
-                <Text style={styles.projectDesc}>{proj.description}</Text>
+                <View style={styles.itemRightCol}>
+                  <Text style={styles.roleText}>{exp.role}</Text>
+                  {exp.description.map((desc, i) => {
+                    const cleanText = desc.replace(/^[•-]\s*/, '');
+                    return (
+                      <View key={i} style={styles.bulletPointContainer}>
+                        <Text style={styles.bulletPointDot}>•</Text>
+                        <Text style={styles.bulletPointText}>{cleanText}</Text>
+                      </View>
+                    );
+                  })}
+                </View>
               </View>
             ))}
           </View>
-        )}
 
-        {/* Credentials / Certifications */}
-        {hasCertifications && (
-          <View wrap={false} style={{ marginBottom: 6 }}>
-            <Text style={[styles.sectionHeader, dynamicStyles.titleAccent, dynamicStyles.leftBorderAccent]}>
-              Certifications & Credentials
-            </Text>
-            <View style={styles.badgeList}>
-              {resume.certifications!.map((cert, idx) => (
-                <Text key={idx} style={styles.badgeItem}>{cert}</Text>
-              ))}
-            </View>
+          {/* Education Section */}
+          <View style={styles.sectionContainer}>
+            <Text style={styles.sectionHeader}>Education</Text>
+            {resume.education.map((edu, idx) => (
+              <View key={idx} style={styles.itemRow} wrap={false}>
+                <View style={styles.itemLeftCol}>
+                  <Text style={styles.periodText}>{edu.period}</Text>
+                  <Text style={styles.companyText}>{edu.institution}</Text>
+                  {edu.location && <Text style={styles.locationText}>{edu.location}</Text>}
+                </View>
+                <View style={styles.itemRightCol}>
+                  <Text style={styles.degreeText}>{edu.degree}</Text>
+                  {edu.details && <Text style={styles.eduDetails}>{edu.details}</Text>}
+                </View>
+              </View>
+            ))}
           </View>
-        )}
 
-        {/* Languages */}
-        {hasLanguages && (
-          <View wrap={false} style={{ marginBottom: 6 }}>
-            <Text style={[styles.sectionHeader, dynamicStyles.titleAccent, dynamicStyles.leftBorderAccent]}>
-              Languages
-            </Text>
-            <View style={styles.badgeList}>
-              {resume.languages!.map((lang, idx) => (
-                <Text key={idx} style={styles.badgeItem}>{lang}</Text>
-              ))}
-            </View>
-          </View>
-        )}
-
-        {/* References */}
-        {hasReferences && (
-          <View wrap={false} style={{ marginBottom: 6 }}>
-            <Text style={[styles.sectionHeader, dynamicStyles.titleAccent, dynamicStyles.leftBorderAccent]}>
-              References
-            </Text>
-            <View style={styles.referencesGrid}>
-              {resume.references!.map((ref, idx) => (
-                <View key={idx} style={styles.referenceCard}>
-                  <Text style={styles.refName}>{ref.name}</Text>
-                  {ref.title && <Text style={styles.refDetail}>{ref.title}</Text>}
-                  {ref.company && <Text style={styles.refDetail}>{ref.company}</Text>}
-                  {ref.relationship && (
-                    <Text style={[styles.refDetail, { fontStyle: 'italic', color: '#64748B' }]}>
-                      {ref.relationship}
-                    </Text>
-                  )}
-                  {(ref.email || ref.phone) && (
-                    <Text style={[styles.refDetail, { marginTop: 1, color: '#334155' }]}>
-                      {[ref.email, ref.phone].filter(Boolean).join('  •  ')}
-                    </Text>
-                  )}
+          {/* Featured Projects Section */}
+          {hasProjects && (
+            <View style={styles.sectionContainer}>
+              <Text style={styles.sectionHeader}>Featured Projects</Text>
+              {resume.projects!.map((proj, idx) => (
+                <View key={idx} style={styles.itemRow} wrap={false}>
+                  <View style={styles.itemLeftCol}>
+                    <Text style={styles.periodText}>Project</Text>
+                    {proj.link && (
+                      <Link src={proj.link.startsWith('http') ? proj.link : `https://${proj.link}`} style={[styles.projectLinkText, dynamicStyles.linkAccent]}>
+                        <Text>View Project</Text>
+                      </Link>
+                    )}
+                  </View>
+                  <View style={styles.itemRightCol}>
+                    <Text style={styles.roleText}>{proj.name}</Text>
+                    <Text style={[styles.projectTech, { marginBottom: 4 }]}>Technologies: {proj.technologies.join(', ')}</Text>
+                    <Text style={styles.projectDesc}>{proj.description}</Text>
+                  </View>
                 </View>
               ))}
             </View>
-          </View>
-        )}
+          )}
 
-        {/* Footer */}
-        <View style={styles.footerContainer} fixed>
-          <Text style={styles.footerText}>RESUME ARCHITECT • PRIVATE & CONFIDENTIAL</Text>
+          {/* References Section */}
+          {hasReferences && (
+            <View style={styles.sectionContainer} wrap={false}>
+              <Text style={styles.sectionHeader}>References</Text>
+              <View style={styles.referencesGrid}>
+                {resume.references!.map((ref, idx) => (
+                  <View key={idx} style={styles.referenceCard}>
+                    <Text style={styles.refName}>{ref.name}</Text>
+                    {ref.title && <Text style={styles.refDetail}>{ref.title}</Text>}
+                    {ref.company && <Text style={styles.refDetail}>{ref.company}</Text>}
+                    {ref.relationship && (
+                      <Text style={[styles.refDetail, { fontStyle: 'italic', color: '#64748B', marginTop: 1 }]}>
+                        {ref.relationship}
+                      </Text>
+                    )}
+                    {(ref.email || ref.phone) && (
+                      <Text style={styles.refContact}>
+                        {[
+                          ref.phone ? `Phone: ${ref.phone}` : null,
+                          ref.email ? `Email: ${ref.email}` : null
+                        ].filter(Boolean).join('\n')}
+                      </Text>
+                    )}
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+
+        </View>
+
+        {/* Unified minimal clean footer */}
+        {/* <View style={styles.footerContainer} fixed>
           <Text style={styles.footerText} render={({ pageNumber, totalPages }) => (
             `Page ${pageNumber} of ${totalPages}`
           )} />
-        </View>
+        </View> */}
 
       </Page>
     </Document>
