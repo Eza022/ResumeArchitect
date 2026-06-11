@@ -8,7 +8,7 @@ import {
   Edit, Save, X, Plus, Trash2
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
-import { pdf, Document, Page, Text, StyleSheet } from '@react-pdf/renderer';
+import { pdf, Document, Page, Text, StyleSheet, View } from '@react-pdf/renderer';
 import { ResumePDF as ResumePDFDocument } from './ResumePDF';
 
 interface ContactInfo {
@@ -245,32 +245,47 @@ export const formatResumeToMarkdown = (resume: TailoredResume): string => {
 
 const pdfExportStyles = StyleSheet.create({
   page: {
-    padding: 40,
+    padding: 50,
     fontFamily: 'Helvetica',
-    fontSize: 11,
-    lineHeight: 1.5,
-    color: '#0F172A',
+    backgroundColor: '#FFFFFF',
   },
   header: {
-    fontSize: 18,
-    marginBottom: 20,
+    fontSize: 22,
+    marginBottom: 24,
     fontWeight: 'bold',
+    color: '#0F172A',
+    borderBottomWidth: 2,
+    borderBottomColor: '#E2E8F0',
+    paddingBottom: 10,
   },
   body: {
-    fontSize: 11,
+    fontSize: 12,
     lineHeight: 1.6,
-    whiteSpace: 'pre-wrap',
+    color: '#334155',
   },
+  paragraph: {
+    marginBottom: 12,
+  }
 });
 
-const createTextDocument = (title: string, content: string) => (
-  <Document>
-    <Page size="A4" style={pdfExportStyles.page}>
-      <Text style={pdfExportStyles.header}>{title}</Text>
-      <Text style={pdfExportStyles.body}>{content}</Text>
-    </Page>
-  </Document>
-);
+const createTextDocument = (title: string, content: string) => {
+  const paragraphs = content.split('\n').filter(p => p.trim() !== '');
+  
+  return (
+    <Document>
+      <Page size="A4" style={pdfExportStyles.page}>
+        <Text style={pdfExportStyles.header}>{title}</Text>
+        <View style={{ marginTop: 10 }}>
+          {paragraphs.map((p, i) => (
+            <Text key={i} style={[pdfExportStyles.body, pdfExportStyles.paragraph]}>
+              {p}
+            </Text>
+          ))}
+        </View>
+      </Page>
+    </Document>
+  );
+};
 
 export default function ResumeBuilder() {
   const [currentResume, setCurrentResume] = useState('');
@@ -284,7 +299,7 @@ export default function ResumeBuilder() {
   const [isExtracting, setIsExtracting] = useState(false);
 
   // Resume Customizer States
-  const [accentColor, setAccentColor] = useState<'indigo' | 'emerald' | 'slate' | 'amber' | 'rose'>('indigo');
+  const [accentColor, setAccentColor] = useState<'indigo' | 'emerald' | 'slate' | 'amber' | 'rose'>('slate');
   const [fontPair, setFontPair] = useState<'outfit' | 'poppins' | 'sans'>('outfit');
   const [layoutStyle, setLayoutStyle] = useState<'split' | 'single'>('split');
 
@@ -333,7 +348,10 @@ export default function ResumeBuilder() {
         const data = await response.json();
         setCurrentResume(data.text);
       } else {
-        throw new Error('Expected JSON response but received unexpected format.');
+        const rawText = await response.text();
+        console.error("Non-JSON API response for extract-text:", rawText);
+        const sampleText = rawText.slice(0, 200);
+        throw new Error(`Expected JSON response from extraction helper but received non-JSON text. Sample: ${sampleText}`);
       }
     } catch (err: any) {
       setError(err.message);
@@ -387,7 +405,10 @@ export default function ResumeBuilder() {
         setIsEditMode(false);
         setActiveTab('resume');
       } else {
-        throw new Error('Expected JSON response but received unexpected format.');
+        const rawText = await response.text();
+        console.error("Non-JSON API response for tailor-resume:", rawText);
+        const sampleText = rawText.slice(0, 200);
+        throw new Error(`Expected JSON response from tailoring helper but received non-JSON text. Sample: ${sampleText}`);
       }
     } catch (err: any) {
       setError(err.message);
@@ -440,14 +461,7 @@ export default function ResumeBuilder() {
     if (!data) return;
     
     setIsExporting(true);
-    
-    // We target the dynamic resume-pdf-container inside the preview area
-    const element = document.getElementById('resume-pdf-container');
-    if (!element) {
-      setError('PDF container not found.');
-      setIsExporting(false);
-      return;
-    }
+    setError(null);
 
     try {
       const candidateName = data.tailoredResume.contact.name || 'Tailored';
@@ -465,6 +479,7 @@ export default function ResumeBuilder() {
             resume={data.tailoredResume}
             accentColor={currentTheme.primary}
             fontPair={fontPair}
+            layoutStyle={layoutStyle}
           />
         ).toBlob();
       } else if (activeTab === 'letter') {
@@ -498,12 +513,12 @@ export default function ResumeBuilder() {
   const currentFonts = FONT_PAIRS[fontPair];
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] font-sans selection:bg-indigo-100">
+    <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] font-sans selection:bg-slate-150">
       {/* Header */}
       <header className="border-b border-[#1A1A1A]/5 bg-white/80 backdrop-blur-md sticky top-0 z-20 px-6 py-4 print:hidden">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-md shadow-indigo-600/10">
+            <div className="w-9 h-9 bg-slate-900 rounded-xl flex items-center justify-center text-white shadow-md shadow-slate-900/10">
               <Sparkles className="w-5 h-5 text-white" />
             </div>
             <div>
@@ -513,7 +528,7 @@ export default function ResumeBuilder() {
           </div>
           <div className="hidden md:flex items-center gap-5 text-xs font-semibold uppercase tracking-widest text-slate-400">
             <span>Precision Architecture</span>
-            <span className="w-1.5 h-1.5 bg-indigo-600 rounded-full"></span>
+            <span className="w-1.5 h-1.5 bg-slate-950 rounded-full animate-pulse"></span>
             <span>ATS Optimized</span>
           </div>
         </div>
@@ -526,7 +541,7 @@ export default function ResumeBuilder() {
           <section className="lg:col-span-5 space-y-6 print:hidden">
             <div className="space-y-2">
               <h2 className="text-3xl font-bold tracking-tight text-slate-900 leading-tight">
-                Architect your <span className="text-indigo-600">career assets.</span>
+                Architect your <span className={currentTheme.primaryText}>career assets.</span>
               </h2>
               <p className="text-slate-500 text-sm leading-relaxed">
                 Upload your raw experience data, paste your target job requirements, and let the AI system draft a clean, professional application package.
@@ -537,11 +552,11 @@ export default function ResumeBuilder() {
               {/* Resume Input */}
               <div className="space-y-3 group">
                 <div className="flex items-center justify-between">
-                  <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400 transition-colors group-focus-within:text-indigo-600">
-                    <User className="w-4 h-4 text-slate-400 group-focus-within:text-indigo-600" />
+                  <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400 transition-colors group-focus-within:text-slate-800">
+                    <User className="w-4 h-4 text-slate-400 group-focus-within:text-slate-800" />
                     Current Experience (Raw CV / Resume)
                   </label>
-                  <label className={`flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-indigo-600 hover:text-indigo-700 cursor-pointer transition-colors bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-100 ${isExtracting ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                  <label className={`flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider ${currentTheme.primaryText} hover:opacity-85 cursor-pointer transition-colors ${currentTheme.lightBg} px-2.5 py-1 rounded-lg border border-slate-100 ${isExtracting ? 'opacity-50 cursor-not-allowed' : ''}`}>
                     {isExtracting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3" />}
                     {isExtracting ? 'Extracting...' : 'Upload File'}
                     <input 
@@ -555,7 +570,7 @@ export default function ResumeBuilder() {
                 </div>
                 <textarea
                   placeholder="Paste your existing resume text here or upload a file..."
-                  className="w-full min-h-[250px] p-4 bg-slate-50/50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-600/5 focus:border-indigo-600 transition-all outline-none resize-none shadow-inner text-sm leading-relaxed"
+                  className="w-full min-h-[250px] p-4 bg-slate-50/50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-slate-900/5 focus:border-slate-800 transition-all outline-none resize-none shadow-inner text-sm leading-relaxed"
                   value={currentResume}
                   onChange={(e) => setCurrentResume(e.target.value)}
                 />
@@ -563,13 +578,13 @@ export default function ResumeBuilder() {
 
               {/* Job description Input */}
               <div className="space-y-3 group">
-                <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400 transition-colors group-focus-within:text-indigo-600">
-                  <Target className="w-4 h-4 text-slate-400 group-focus-within:text-indigo-600" />
+                <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400 transition-colors group-focus-within:text-slate-800">
+                  <Target className="w-4 h-4 text-slate-400 group-focus-within:text-[#0F172A]" />
                   Target Specifications (Job Description)
                 </label>
                 <textarea
                   placeholder="Paste the job requirements and description here..."
-                  className="w-full min-h-[200px] p-4 bg-slate-50/50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-600/5 focus:border-indigo-600 transition-all outline-none resize-none shadow-inner text-sm leading-relaxed"
+                  className="w-full min-h-[200px] p-4 bg-slate-50/50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-slate-900/5 focus:border-slate-800 transition-all outline-none resize-none shadow-inner text-sm leading-relaxed"
                   value={jobDescription}
                   onChange={(e) => setJobDescription(e.target.value)}
                 />
@@ -589,7 +604,8 @@ export default function ResumeBuilder() {
               <button
                 onClick={handleTailor}
                 disabled={isGenerating}
-                className="w-full h-14 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-bold tracking-wide flex items-center justify-center gap-2.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] shadow-lg shadow-indigo-600/20 group relative overflow-hidden"
+                style={{ backgroundColor: currentTheme.hex }}
+                className="w-full h-14 hover:opacity-90 text-white rounded-2xl font-bold tracking-wide flex items-center justify-center gap-2.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] shadow-lg shadow-slate-900/10 group relative overflow-hidden"
               >
                 {isGenerating ? (
                   <>
@@ -598,7 +614,7 @@ export default function ResumeBuilder() {
                   </>
                 ) : (
                   <>
-                    <Wand2 className="w-5 h-5 group-hover:rotate-12 transition-transform text-indigo-200" />
+                    <Wand2 className="w-5 h-5 group-hover:rotate-12 transition-transform text-white/80" />
                     <span>Architect Application Package</span>
                   </>
                 )}
@@ -681,7 +697,7 @@ export default function ResumeBuilder() {
                               : 'text-slate-400 hover:text-slate-600'
                           }`}
                         >
-                          <Icon className={`w-4 h-4 ${activeTab === tab.id ? 'text-indigo-600' : ''}`} />
+                          <Icon className={`w-4 h-4 ${activeTab === tab.id ? currentTheme.primaryText : ''}`} />
                           {tab.label}
                         </button>
                       );
@@ -706,7 +722,7 @@ export default function ResumeBuilder() {
                                 title={theme.name}
                                 className={`w-6 h-6 rounded-full flex items-center justify-center transition-all ${
                                   accentColor === key 
-                                    ? 'ring-2 ring-indigo-600 ring-offset-2 scale-110' 
+                                    ? 'ring-2 ring-slate-900 ring-offset-2 scale-110' 
                                     : 'hover:scale-105'
                                 }`}
                                 style={{ backgroundColor: theme.hex }}
@@ -777,8 +793,8 @@ export default function ResumeBuilder() {
                   <div className="flex items-center justify-between print:hidden">
                     <div className="flex items-center gap-3">
                       {activeTab !== 'analysis' && (
-                        <div className="flex items-center gap-2 px-3 py-1 bg-indigo-50 border border-indigo-100 text-indigo-700 rounded-full">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-indigo-600" />
+                        <div className={`flex items-center gap-2 px-3 py-1 border rounded-full ${currentTheme.lightBg} ${currentTheme.primaryText} border-slate-200/40`}>
+                          <CheckCircle2 className="w-3.5 h-3.5" />
                           <span className="text-[10px] font-bold uppercase tracking-wider">ATS Friendly</span>
                         </div>
                       )}
@@ -1370,20 +1386,20 @@ export default function ResumeBuilder() {
                             /* TWO COLUMN SPLIT LAYOUT */
                             <div className="flex w-full min-h-[297mm]">
                             
-                            {/* Left Column (Sidebar) - 34% width */}
+                            {/* Left Column (Sidebar) - Solid sidebar view block */}
                             <div 
-                              className="w-[34%] p-7 flex flex-col gap-6 border-r border-slate-100"
+                              className="w-[184px] p-7 flex flex-col gap-6 border-r border-slate-100 shrink-0"
                               style={{ backgroundColor: currentTheme.sidebarBg }}
                             >
                               {/* Contact Information Group */}
                               <div className="space-y-4 break-inside-avoid">
-                                <h3 className={`text-xs font-bold uppercase tracking-wider pb-1.5 border-b`} style={{ color: currentTheme.primary, borderColor: `${currentTheme.primary}20` }}>
+                                <h3 className="text-xs font-bold uppercase tracking-wider pb-1.5 border-b" style={{ color: currentTheme.primary, borderColor: `${currentTheme.primary}20` }}>
                                   Contact
                                 </h3>
                                 <ul className="space-y-2.5 text-[11px] text-slate-600">
                                   <li className="flex items-center gap-2 hover:text-slate-800 transition-colors">
                                     <Mail className="w-3.5 h-3.5 shrink-0" style={{ color: currentTheme.primary }} />
-                                    <span className="truncate">{data.tailoredResume.contact.email}</span>
+                                    <span className="truncate max-w-[120px]">{data.tailoredResume.contact.email}</span>
                                   </li>
                                   <li className="flex items-center gap-2 hover:text-slate-800 transition-colors">
                                     <Phone className="w-3.5 h-3.5 shrink-0" style={{ color: currentTheme.primary }} />
@@ -1396,19 +1412,19 @@ export default function ResumeBuilder() {
                                   {data.tailoredResume.contact.website && (
                                     <li className="flex items-center gap-2 hover:text-slate-800 transition-colors">
                                       <Globe className="w-3.5 h-3.5 shrink-0" style={{ color: currentTheme.primary }} />
-                                      <span className="truncate">{data.tailoredResume.contact.website}</span>
+                                      <span className="truncate max-w-[120px]">{data.tailoredResume.contact.website}</span>
                                     </li>
                                   )}
                                   {data.tailoredResume.contact.linkedin && (
                                     <li className="flex items-center gap-2 hover:text-slate-800 transition-colors">
                                       <Linkedin className="w-3.5 h-3.5 shrink-0" style={{ color: currentTheme.primary }} />
-                                      <span className="truncate">{data.tailoredResume.contact.linkedin}</span>
+                                      <span className="truncate max-w-[120px]">{data.tailoredResume.contact.linkedin}</span>
                                     </li>
                                   )}
                                   {data.tailoredResume.contact.github && (
                                     <li className="flex items-center gap-2 hover:text-slate-800 transition-colors">
                                       <Github className="w-3.5 h-3.5 shrink-0" style={{ color: currentTheme.primary }} />
-                                      <span className="truncate">{data.tailoredResume.contact.github}</span>
+                                      <span className="truncate max-w-[120px]">{data.tailoredResume.contact.github}</span>
                                     </li>
                                   )}
                                 </ul>
@@ -1416,7 +1432,7 @@ export default function ResumeBuilder() {
 
                               {/* Skills Section */}
                               <div className="space-y-4 break-inside-avoid">
-                                <h3 className={`text-xs font-bold uppercase tracking-wider pb-1.5 border-b`} style={{ color: currentTheme.primary, borderColor: `${currentTheme.primary}20` }}>
+                                <h3 className="text-xs font-bold uppercase tracking-wider pb-1.5 border-b" style={{ color: currentTheme.primary, borderColor: `${currentTheme.primary}20` }}>
                                   Core Expertise
                                 </h3>
                                 <div className="space-y-3">
@@ -1443,7 +1459,7 @@ export default function ResumeBuilder() {
 
                               {/* Education Section */}
                               <div className="space-y-4 break-inside-avoid">
-                                <h3 className={`text-xs font-bold uppercase tracking-wider pb-1.5 border-b`} style={{ color: currentTheme.primary, borderColor: `${currentTheme.primary}20` }}>
+                                <h3 className="text-xs font-bold uppercase tracking-wider pb-1.5 border-b" style={{ color: currentTheme.primary, borderColor: `${currentTheme.primary}20` }}>
                                   Education
                                 </h3>
                                 <div className="space-y-3">
@@ -1461,7 +1477,7 @@ export default function ResumeBuilder() {
                               {/* Certifications if available */}
                               {data.tailoredResume.certifications && data.tailoredResume.certifications.length > 0 && (
                                 <div className="space-y-4 break-inside-avoid">
-                                  <h3 className={`text-xs font-bold uppercase tracking-wider pb-1.5 border-b`} style={{ color: currentTheme.primary, borderColor: `${currentTheme.primary}20` }}>
+                                  <h3 className="text-xs font-bold uppercase tracking-wider pb-1.5 border-b" style={{ color: currentTheme.primary, borderColor: `${currentTheme.primary}20` }}>
                                     Credentials
                                   </h3>
                                   <ul className="space-y-1.5 text-[11px] text-slate-600">
@@ -1478,7 +1494,7 @@ export default function ResumeBuilder() {
                               {/* Languages if available */}
                               {data.tailoredResume.languages && data.tailoredResume.languages.length > 0 && (
                                 <div className="space-y-4 break-inside-avoid">
-                                  <h3 className={`text-xs font-bold uppercase tracking-wider pb-1.5 border-b`} style={{ color: currentTheme.primary, borderColor: `${currentTheme.primary}20` }}>
+                                  <h3 className="text-xs font-bold uppercase tracking-wider pb-1.5 border-b" style={{ color: currentTheme.primary, borderColor: `${currentTheme.primary}20` }}>
                                     Languages
                                   </h3>
                                   <ul className="space-y-1.5 text-[11px] text-slate-600">
@@ -1491,36 +1507,10 @@ export default function ResumeBuilder() {
                                   </ul>
                                 </div>
                               )}
-
-                              {/* References if available */}
-                              {data.tailoredResume.references && data.tailoredResume.references.length > 0 && (
-                                <div className="space-y-4 break-inside-avoid">
-                                  <h3 className={`text-xs font-bold uppercase tracking-wider pb-1.5 border-b`} style={{ color: currentTheme.primary, borderColor: `${currentTheme.primary}20` }}>
-                                    References
-                                  </h3>
-                                  <div className="space-y-3">
-                                    {data.tailoredResume.references.map((ref, i) => (
-                                      <div key={i} className="space-y-0.5 text-[11px]">
-                                        <p className="font-bold text-slate-800 leading-tight">{ref.name}</p>
-                                        {ref.title && <p className="text-slate-600 leading-tight">{ref.title}</p>}
-                                        {ref.company && <p className="text-[10px] text-slate-500 leading-tight">{ref.company}</p>}
-                                        {ref.relationship && (
-                                          <span className="inline-block px-1.5 py-0.5 rounded text-[9px] font-bold uppercase border mt-0.5"
-                                            style={{ color: currentTheme.primary, borderColor: `${currentTheme.primary}20`, backgroundColor: `${currentTheme.primary}05` }}>
-                                            {ref.relationship}
-                                          </span>
-                                        )}
-                                        {ref.email && <p className="text-[10px] text-slate-400 mt-0.5">{ref.email}</p>}
-                                        {ref.phone && <p className="text-[10px] text-slate-400">{ref.phone}</p>}
-                                      </div>
-                                    ))}
-                                  </div>
-                                </div>
-                              )}
                             </div>
 
-                            {/* Right Column (Main content area) - 66% width */}
-                            <div className="w-[66%] p-8 flex flex-col gap-6">
+                            {/* Right Column (Main content area) */}
+                            <div className="flex-1 p-8 flex flex-col gap-6">
                               {/* Header Title */}
                               <div className="space-y-1 border-b pb-4">
                                 <h2 className={`text-3xl font-bold tracking-tight text-slate-900 ${currentFonts.headerClass}`} style={{ fontFamily: currentFonts.headerFamily }}>
@@ -1533,7 +1523,7 @@ export default function ResumeBuilder() {
 
                               {/* Professional Summary */}
                               <div className="space-y-2.5 break-inside-avoid">
-                                <h3 className={`text-xs font-bold uppercase tracking-wider`} style={{ color: currentTheme.primary }}>
+                                <h3 className="text-xs font-bold uppercase tracking-wider pl-2 border-l-2" style={{ color: currentTheme.primary, borderColor: currentTheme.primary }}>
                                   Professional Summary
                                 </h3>
                                 <p className="text-[12px] text-slate-600 leading-relaxed font-normal">
@@ -1543,7 +1533,7 @@ export default function ResumeBuilder() {
 
                               {/* Work Experience */}
                               <div className="space-y-4">
-                                <h3 className={`text-xs font-bold uppercase tracking-wider border-b pb-1`} style={{ color: currentTheme.primary, borderColor: `${currentTheme.primary}10` }}>
+                                <h3 className="text-xs font-bold uppercase tracking-wider pl-2 border-l-2" style={{ color: currentTheme.primary, borderColor: currentTheme.primary }}>
                                   Work History
                                 </h3>
                                 <div className="space-y-4">
@@ -1572,7 +1562,7 @@ export default function ResumeBuilder() {
                               {/* Key Projects */}
                               {data.tailoredResume.projects && data.tailoredResume.projects.length > 0 && (
                                 <div className="space-y-4">
-                                  <h3 className={`text-xs font-bold uppercase tracking-wider border-b pb-1`} style={{ color: currentTheme.primary, borderColor: `${currentTheme.primary}10` }}>
+                                  <h3 className="text-xs font-bold uppercase tracking-wider pl-2 border-l-2" style={{ color: currentTheme.primary, borderColor: currentTheme.primary }}>
                                     Projects
                                   </h3>
                                   <div className="space-y-4">
@@ -1644,7 +1634,7 @@ export default function ResumeBuilder() {
                                 )}
                               </div>
                               
-                              <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[11px] text-slate-500 font-medium">
+                              <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[11px] text-slate-500 font-medium font-display">
                                 {data.tailoredResume.contact.linkedin && (
                                   <span className="flex items-center gap-1">
                                     <Linkedin className="w-3.5 h-3.5" style={{ color: currentTheme.primary }} />
@@ -1663,7 +1653,7 @@ export default function ResumeBuilder() {
 
                             {/* Summary */}
                             <div className="space-y-2 break-inside-avoid">
-                              <h3 className="text-xs font-bold uppercase tracking-wider border-b pb-1" style={{ color: currentTheme.primary }}>
+                              <h3 className="text-xs font-bold uppercase tracking-wider pl-2 border-l-2" style={{ color: currentTheme.primary, borderColor: currentTheme.primary }}>
                                 Professional Profile
                               </h3>
                               <p className="text-[12px] text-slate-600 leading-relaxed font-normal">
@@ -1673,7 +1663,7 @@ export default function ResumeBuilder() {
 
                             {/* Skills Grid */}
                             <div className="space-y-3 break-inside-avoid">
-                              <h3 className="text-xs font-bold uppercase tracking-wider border-b pb-1" style={{ color: currentTheme.primary }}>
+                              <h3 className="text-xs font-bold uppercase tracking-wider pl-2 border-l-2" style={{ color: currentTheme.primary, borderColor: currentTheme.primary }}>
                                 Technical Expertise
                               </h3>
                               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -1692,7 +1682,7 @@ export default function ResumeBuilder() {
 
                             {/* Experience */}
                             <div className="space-y-4">
-                              <h3 className="text-xs font-bold uppercase tracking-wider border-b pb-1" style={{ color: currentTheme.primary }}>
+                              <h3 className="text-xs font-bold uppercase tracking-wider pl-2 border-l-2" style={{ color: currentTheme.primary, borderColor: currentTheme.primary }}>
                                 Professional Experience
                               </h3>
                               <div className="space-y-4">
@@ -1721,7 +1711,7 @@ export default function ResumeBuilder() {
                             {/* Projects */}
                             {data.tailoredResume.projects && data.tailoredResume.projects.length > 0 && (
                               <div className="space-y-4">
-                                <h3 className="text-xs font-bold uppercase tracking-wider border-b pb-1" style={{ color: currentTheme.primary }}>
+                                <h3 className="text-xs font-bold uppercase tracking-wider pl-2 border-l-2" style={{ color: currentTheme.primary, borderColor: currentTheme.primary }}>
                                   Key Projects
                                 </h3>
                                 <div className="space-y-4">
@@ -1800,7 +1790,7 @@ export default function ResumeBuilder() {
                             {/* References Section (single column) */}
                             {data.tailoredResume.references && data.tailoredResume.references.length > 0 && (
                               <div className="space-y-4 pt-2 border-t border-slate-100 break-inside-avoid">
-                                <h3 className="text-xs font-bold uppercase tracking-wider border-b pb-1" style={{ color: currentTheme.primary }}>
+                                <h3 className="text-xs font-bold uppercase tracking-wider pl-2 border-l-2" style={{ color: currentTheme.primary, borderColor: currentTheme.primary }}>
                                   References
                                 </h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1828,7 +1818,7 @@ export default function ResumeBuilder() {
                         )
                       ) : activeTab === 'letter' ? (
                         /* COVER LETTER LETTERHEAD TEMPLATE */
-                        <div className="p-12 flex flex-col gap-8 min-h-[297mm]">
+                        <div className="p-12 flex flex-col gap-8 min-h-[297mm] w-full">
                           
                           {/* Header block (Matches Resume branding) */}
                           <div className="flex justify-between items-start border-b pb-6">
@@ -1840,7 +1830,7 @@ export default function ResumeBuilder() {
                                 {data.tailoredResume.contact.title}
                               </p>
                             </div>
-                            <div className="text-right text-[11px] text-slate-500 space-y-1">
+                            <div className="text-right text-[11px] text-slate-500 space-y-1 font-sans">
                               <p>{data.tailoredResume.contact.email}</p>
                               <p>{data.tailoredResume.contact.phone}</p>
                               <p>{data.tailoredResume.contact.location}</p>
@@ -1848,14 +1838,14 @@ export default function ResumeBuilder() {
                           </div>
 
                           {/* Letter Meta Details */}
-                          <div className="space-y-1 text-[12px] text-slate-500 mt-2">
+                          <div className="space-y-1 text-[12px] text-slate-500 mt-2 font-sans">
                             <p className="font-semibold text-slate-800">
                               {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
                             </p>
                           </div>
 
                           {/* Cover Letter Content Body */}
-                          <div className="text-[12.5px] text-slate-700 leading-relaxed space-y-4 max-w-2xl mt-4">
+                          <div className="text-[12.5px] text-slate-700 leading-relaxed space-y-4 max-w-2xl mt-4 font-sans">
                             {data.coverLetter.split('\n\n').map((paragraph, idx) => (
                               <p key={idx} className="font-normal">
                                 {paragraph}
@@ -1864,7 +1854,7 @@ export default function ResumeBuilder() {
                           </div>
 
                           {/* Sign-off */}
-                          <div className="mt-8 space-y-4 text-[12.5px] text-slate-600">
+                          <div className="mt-8 space-y-4 text-[12.5px] text-slate-600 font-sans">
                             <p>Sincerely,</p>
                             <div>
                               <p className="font-bold text-slate-800">{data.tailoredResume.contact.name}</p>
@@ -1874,7 +1864,7 @@ export default function ResumeBuilder() {
                         </div>
                       ) : (
                         /* JOB FIT REPORT TEMPLATE */
-                        <div className="p-12 flex flex-col gap-8 min-h-[297mm]">
+                        <div className="p-12 flex flex-col gap-8 min-h-[297mm] w-full font-sans">
                           
                           {/* Header block */}
                           <div className="flex justify-between items-center border-b pb-5">
