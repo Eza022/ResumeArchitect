@@ -20,8 +20,8 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'row',
   },
-  // Solid full-bleed sidebar on every page
-  sidebar: {
+  // Solid full-bleed sidebar background on every page
+  sidebarBackground: {
     position: 'absolute',
     left: 0,
     top: 0,
@@ -29,12 +29,20 @@ const styles = StyleSheet.create({
     height: '100%',
     width: '30%',
     backgroundColor: '#2E3544',
+    borderLeftWidth: 10, // Leftmost vertical accent focus line
+  },
+  // Sidebar content only on the first page
+  sidebarContent: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: '30%',
     color: '#FFFFFF',
     paddingTop: 36,
     paddingBottom: 36,
     paddingLeft: 16,
     paddingRight: 16,
-    borderLeftWidth: 10, // Leftmost vertical accent focus line
     display: 'flex',
     flexDirection: 'column',
   },
@@ -341,8 +349,11 @@ export const ResumePDF: React.FC<ResumePDFProps> = ({
     <Document>
       <Page size="A4" style={styles.page}>
         
-        {/* Left Column Sidebar - Absolute positioned and fixed on every page */}
-        <View style={[styles.sidebar, dynamicStyles.borderLeftColor]} fixed>
+        {/* Left Column Sidebar Background - fixed on every page */}
+        <View style={[styles.sidebarBackground, dynamicStyles.borderLeftColor]} fixed />
+        
+        {/* Left Column Sidebar Content - Absolute positioned on first page only */}
+        <View style={styles.sidebarContent}>
           
           {/* Contact Section */}
           <View style={styles.sidebarSection}>
