@@ -13,36 +13,40 @@ const styles = StyleSheet.create({
   page: {
     fontFamily: 'Helvetica',
     backgroundColor: '#FFFFFF',
-    padding: 0,
+    paddingTop: 36,
+    paddingBottom: 44,
+    paddingRight: 24,
+    // Left padding is handled by mainContent's marginLeft to keep sidebar full bleed
     display: 'flex',
     flexDirection: 'row',
   },
-  // Deep navy-slate sidebar matching exclusive templates
+  // Solid full-bleed sidebar on every page
   sidebar: {
-    width: '32%',
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    height: '100%',
+    width: '30%',
     backgroundColor: '#2E3544',
     color: '#FFFFFF',
-    paddingTop: 30,
-    paddingBottom: 30,
+    paddingTop: 36,
+    paddingBottom: 36,
     paddingLeft: 16,
     paddingRight: 16,
-    borderLeftWidth: 10, // Leftmost vertical vibrant colorful focus accent strip
+    borderLeftWidth: 10, // Leftmost vertical accent focus line
     display: 'flex',
     flexDirection: 'column',
   },
-  // Main right-hand body section
+  // Main column perfectly cleared of sidebar on every page
   mainContent: {
-    width: '68%',
-    backgroundColor: '#FFFFFF',
-    paddingTop: 30,
-    paddingBottom: 30,
-    paddingLeft: 24,
-    paddingRight: 24,
+    marginLeft: '33%',
     display: 'flex',
     flexDirection: 'column',
+    width: '67%',
   },
   
-  // Left Column Sidebar Components
+  // Sidebar Components
   sidebarSection: {
     marginBottom: 20,
   },
@@ -109,7 +113,7 @@ const styles = StyleSheet.create({
     lineHeight: 1.25,
   },
 
-  // Main Right Column Layout
+  // Main Right Column Components
   headerContainer: {
     marginBottom: 24,
     paddingBottom: 12,
@@ -152,7 +156,7 @@ const styles = StyleSheet.create({
     textAlign: 'justify',
   },
 
-  // Dual-column format for each experience/education listing
+  // Dual-column format for Experience / Education listings
   itemRow: {
     display: 'flex',
     flexDirection: 'row',
@@ -258,7 +262,7 @@ const styles = StyleSheet.create({
     lineHeight: 1.35,
   },
 
-  // References component - clean side by side grid
+  // References styles
   referencesGrid: {
     display: 'flex',
     flexDirection: 'row',
@@ -291,7 +295,7 @@ const styles = StyleSheet.create({
   footerContainer: {
     position: 'absolute',
     bottom: 12,
-    left: 24,
+    left: '33%',
     right: 24,
     display: 'flex',
     flexDirection: 'row',
@@ -337,8 +341,8 @@ export const ResumePDF: React.FC<ResumePDFProps> = ({
     <Document>
       <Page size="A4" style={styles.page}>
         
-        {/* Left Column Sidebar - Deep Navy background with neon/vibrant Accent border on the extreme left */}
-        <View style={[styles.sidebar, dynamicStyles.borderLeftColor]}>
+        {/* Left Column Sidebar - Absolute positioned and fixed on every page */}
+        <View style={[styles.sidebar, dynamicStyles.borderLeftColor]} fixed>
           
           {/* Contact Section */}
           <View style={styles.sidebarSection}>
@@ -416,7 +420,7 @@ export const ResumePDF: React.FC<ResumePDFProps> = ({
             </View>
           )}
 
-          {/* Awards / Certifications Section */}
+          {/* Awards Section */}
           {hasCertifications && (
             <View style={styles.sidebarSection}>
               <Text style={styles.sidebarTitle}>Awards</Text>
@@ -460,8 +464,34 @@ export const ResumePDF: React.FC<ResumePDFProps> = ({
 
           {/* Experience Section */}
           <View style={styles.sectionContainer}>
-            <Text style={styles.sectionHeader}>Experience</Text>
-            {resume.experience.map((exp, idx) => (
+            {/* Keeping the Experience header and the first job together so they don't break across pages */}
+            <View wrap={false}>
+              <Text style={styles.sectionHeader}>Experience</Text>
+              {resume.experience.length > 0 && (
+                <View style={styles.itemRow}>
+                  <View style={styles.itemLeftCol}>
+                    <Text style={styles.periodText}>{resume.experience[0].period}</Text>
+                    <Text style={styles.companyText}>{resume.experience[0].company}</Text>
+                    {resume.experience[0].location && <Text style={styles.locationText}>{resume.experience[0].location}</Text>}
+                  </View>
+                  <View style={styles.itemRightCol}>
+                    <Text style={styles.roleText}>{resume.experience[0].role}</Text>
+                    {resume.experience[0].description.map((desc, i) => {
+                      const cleanText = desc.replace(/^[•-]\s*/, '');
+                      return (
+                        <View key={i} style={styles.bulletPointContainer}>
+                          <Text style={styles.bulletPointDot}>•</Text>
+                          <Text style={styles.bulletPointText}>{cleanText}</Text>
+                        </View>
+                      );
+                    })}
+                  </View>
+                </View>
+              )}
+            </View>
+
+            {/* Render the remaining Experience items */}
+            {resume.experience.slice(1).map((exp, idx) => (
               <View key={idx} style={styles.itemRow} wrap={false}>
                 <View style={styles.itemLeftCol}>
                   <Text style={styles.periodText}>{exp.period}</Text>
@@ -484,8 +514,8 @@ export const ResumePDF: React.FC<ResumePDFProps> = ({
             ))}
           </View>
 
-          {/* Education Section */}
-          <View style={styles.sectionContainer}>
+          {/* Education Section - Blocked entirely to prevent page-break orphan headers */}
+          <View style={styles.sectionContainer} wrap={false}>
             <Text style={styles.sectionHeader}>Education</Text>
             {resume.education.map((edu, idx) => (
               <View key={idx} style={styles.itemRow} wrap={false}>
@@ -502,9 +532,9 @@ export const ResumePDF: React.FC<ResumePDFProps> = ({
             ))}
           </View>
 
-          {/* Featured Projects Section */}
+          {/* Featured Projects Section - Blocked entirely to prevent split headers */}
           {hasProjects && (
-            <View style={styles.sectionContainer}>
+            <View style={styles.sectionContainer} wrap={false}>
               <Text style={styles.sectionHeader}>Featured Projects</Text>
               {resume.projects!.map((proj, idx) => (
                 <View key={idx} style={styles.itemRow} wrap={false}>
@@ -526,7 +556,7 @@ export const ResumePDF: React.FC<ResumePDFProps> = ({
             </View>
           )}
 
-          {/* References Section */}
+          {/* References Section - Blocked entirely to prevent split headers */}
           {hasReferences && (
             <View style={styles.sectionContainer} wrap={false}>
               <Text style={styles.sectionHeader}>References</Text>
@@ -558,11 +588,11 @@ export const ResumePDF: React.FC<ResumePDFProps> = ({
         </View>
 
         {/* Unified minimal clean footer */}
-        {/* <View style={styles.footerContainer} fixed>
+        <View style={styles.footerContainer} fixed>
           <Text style={styles.footerText} render={({ pageNumber, totalPages }) => (
             `Page ${pageNumber} of ${totalPages}`
           )} />
-        </View> */}
+        </View>
 
       </Page>
     </Document>
