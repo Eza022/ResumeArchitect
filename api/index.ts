@@ -3,13 +3,29 @@ import { GoogleGenAI, Type } from "@google/genai";
 import dotenv from "dotenv";
 import multer from "multer";
 import mammoth from "mammoth";
+import rateLimit from "express-rate-limit";
 
 dotenv.config();
 
 const app = express();
 app.use(express.json());
 
-const upload = multer({ storage: multer.memoryStorage() });
+// Set up rate limiting to prevent API abuse and quota exhaustion
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20, // limit each IP to 20 requests per windowMs
+  message: { error: "Too many requests from this IP, please try again after 15 minutes" },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+app.use("/api/", apiLimiter);
+
+// Protect server RAM and Vercel payload limits by setting a hard 4MB limit
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 4 * 1024 * 1024 }, // 4MB
+});
 
 const geminiApiKey = process.env.GEMINI_API_KEY;
 if (!geminiApiKey || geminiApiKey === "MY_GEMINI_API_KEY") {
@@ -24,6 +40,39 @@ const ai = new GoogleGenAI({
     }
   }
 });
+
+/**
+ * Retry a Gemini API call up to `maxAttempts` times with exponential backoff
+ * when the service returns a 503 "high demand" error.
+ */
+async function withRetry<T>(
+  fn: () => Promise<T>,
+  maxAttempts = 3,
+  baseDelayMs = 1000
+): Promise<T> {
+  let lastError: any;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      return await fn();
+    } catch (err: any) {
+      const is503 =
+        err?.status === 503 ||
+        err?.message?.includes("503") ||
+        err?.message?.toLowerCase().includes("high demand") ||
+        err?.message?.toLowerCase().includes("unavailable");
+
+      if (is503 && attempt < maxAttempts) {
+        const delay = baseDelayMs * Math.pow(2, attempt - 1); // 1s, 2s, 4s…
+        console.warn(`Gemini 503 on attempt ${attempt}/${maxAttempts}. Retrying in ${delay}ms…`);
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        lastError = err;
+        continue;
+      }
+      throw err;
+    }
+  }
+  throw lastError;
+}
 
 app.post("/api/extract-text", upload.single("file"), async (req, res) => {
   try {
@@ -41,28 +90,35 @@ app.post("/api/extract-text", upload.single("file"), async (req, res) => {
       // Use Gemini's native PDF understanding — no local worker needed (works on Vercel)
       try {
         console.log("Extracting PDF text via Gemini...");
-        const response = await ai.models.generateContent({
-          model: "gemini-2.5-flash",
-          contents: {
-            parts: [
-              {
-                inlineData: {
-                  mimeType: "application/pdf",
-                  data: req.file.buffer.toString("base64")
+        const response = await withRetry(() =>
+          ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: {
+              parts: [
+                {
+                  inlineData: {
+                    mimeType: "application/pdf",
+                    data: req.file!.buffer.toString("base64")
+                  }
+                },
+                {
+                  text: "Extract all text from this resume PDF faithfully. Maintain a logical order. Output ONLY the extracted text content, no commentary."
                 }
-              },
-              {
-                text: "Extract all text from this resume PDF faithfully. Maintain a logical order. Output ONLY the extracted text content, no commentary."
-              }
-            ]
-          }
-        });
+              ]
+            }
+          })
+        );
         text = response.text || "";
         console.log(`Gemini PDF extraction succeeded. Extracted ${text?.length || 0} characters.`);
       } catch (pdfErr: any) {
         console.error("Gemini PDF Extraction Error:", pdfErr);
-        if (pdfErr.status === 503 || pdfErr.message?.includes("503")) {
-          throw new Error("The AI extraction service is busy. Please try again in a few moments or paste your CV manually.");
+        const is503 =
+          pdfErr?.status === 503 ||
+          pdfErr?.message?.includes("503") ||
+          pdfErr?.message?.toLowerCase().includes("high demand") ||
+          pdfErr?.message?.toLowerCase().includes("unavailable");
+        if (is503) {
+          throw new Error("The AI extraction service is busy after 3 attempts. Please try again in a few moments or paste your CV manually.");
         }
         throw new Error(`Failed to extract text from PDF: ${pdfErr.message || pdfErr}`);
       }
@@ -105,9 +161,10 @@ app.post("/api/tailor-resume", async (req, res) => {
       return res.status(400).json({ error: "Missing resume or job description" });
     }
 
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: `
+    const response = await withRetry(() =>
+      ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: `
         You are an expert resume writer and career coach. 
         I will provide a user's current resume and a job description. 
         Your task is to:
@@ -135,109 +192,115 @@ app.post("/api/tailor-resume", async (req, res) => {
         JOB DESCRIPTION:
         ${jobDescription}
       `,
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            tailoredResume: {
-              type: Type.OBJECT,
-              properties: {
-                contact: {
-                  type: Type.OBJECT,
-                  properties: {
-                    name: { type: Type.STRING },
-                    title: { type: Type.STRING },
-                    email: { type: Type.STRING },
-                    phone: { type: Type.STRING },
-                    location: { type: Type.STRING },
-                    website: { type: Type.STRING },
-                    linkedin: { type: Type.STRING },
-                    github: { type: Type.STRING }
-                  },
-                  required: ["name", "title", "email", "phone", "location"]
-                },
-                summary: { type: Type.STRING },
-                experience: {
-                  type: Type.ARRAY,
-                  items: {
-                    type: Type.OBJECT,
-                    properties: {
-                      role: { type: Type.STRING },
-                      company: { type: Type.STRING },
-                      location: { type: Type.STRING },
-                      period: { type: Type.STRING },
-                      description: { type: Type.ARRAY, items: { type: Type.STRING } }
-                    },
-                    required: ["role", "company", "period", "description"]
-                  }
-                },
-                education: {
-                  type: Type.ARRAY,
-                  items: {
-                    type: Type.OBJECT,
-                    properties: {
-                      degree: { type: Type.STRING },
-                      institution: { type: Type.STRING },
-                      location: { type: Type.STRING },
-                      period: { type: Type.STRING },
-                      details: { type: Type.STRING }
-                    },
-                    required: ["degree", "institution", "period"]
-                  }
-                },
-                skills: {
-                  type: Type.ARRAY,
-                  items: {
-                    type: Type.OBJECT,
-                    properties: {
-                      category: { type: Type.STRING },
-                      items: { type: Type.ARRAY, items: { type: Type.STRING } }
-                    },
-                    required: ["category", "items"]
-                  }
-                },
-                references: {
-                  type: Type.ARRAY,
-                  items: {
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              tailoredResume: {
+                type: Type.OBJECT,
+                properties: {
+                  contact: {
                     type: Type.OBJECT,
                     properties: {
                       name: { type: Type.STRING },
                       title: { type: Type.STRING },
-                      company: { type: Type.STRING },
                       email: { type: Type.STRING },
                       phone: { type: Type.STRING },
-                      relationship: { type: Type.STRING }
+                      location: { type: Type.STRING },
+                      website: { type: Type.STRING },
+                      linkedin: { type: Type.STRING },
+                      github: { type: Type.STRING }
                     },
-                    required: ["name"]
+                    required: ["name", "title", "email", "phone", "location"]
+                  },
+                  summary: { type: Type.STRING },
+                  experience: {
+                    type: Type.ARRAY,
+                    items: {
+                      type: Type.OBJECT,
+                      properties: {
+                        role: { type: Type.STRING },
+                        company: { type: Type.STRING },
+                        location: { type: Type.STRING },
+                        period: { type: Type.STRING },
+                        description: { type: Type.ARRAY, items: { type: Type.STRING } }
+                      },
+                      required: ["role", "company", "period", "description"]
+                    }
+                  },
+                  education: {
+                    type: Type.ARRAY,
+                    items: {
+                      type: Type.OBJECT,
+                      properties: {
+                        degree: { type: Type.STRING },
+                        institution: { type: Type.STRING },
+                        location: { type: Type.STRING },
+                        period: { type: Type.STRING },
+                        details: { type: Type.STRING }
+                      },
+                      required: ["degree", "institution", "period"]
+                    }
+                  },
+                  skills: {
+                    type: Type.ARRAY,
+                    items: {
+                      type: Type.OBJECT,
+                      properties: {
+                        category: { type: Type.STRING },
+                        items: { type: Type.ARRAY, items: { type: Type.STRING } }
+                      },
+                      required: ["category", "items"]
+                    }
+                  },
+                  references: {
+                    type: Type.ARRAY,
+                    items: {
+                      type: Type.OBJECT,
+                      properties: {
+                        name: { type: Type.STRING },
+                        title: { type: Type.STRING },
+                        company: { type: Type.STRING },
+                        email: { type: Type.STRING },
+                        phone: { type: Type.STRING },
+                        relationship: { type: Type.STRING }
+                      },
+                      required: ["name"]
+                    }
                   }
-                }
+                },
+                required: ["contact", "summary", "experience", "education", "skills"]
               },
-              required: ["contact", "summary", "experience", "education", "skills"]
+              coverLetter: { type: Type.STRING },
+              analysis: {
+                type: Type.OBJECT,
+                properties: {
+                  matchScore: { type: Type.NUMBER },
+                  matchedKeywords: { type: Type.ARRAY, items: { type: Type.STRING } },
+                  missingKeywords: { type: Type.ARRAY, items: { type: Type.STRING } },
+                  keyImprovements: { type: Type.STRING },
+                },
+                required: ["matchScore", "matchedKeywords", "missingKeywords", "keyImprovements"]
+              }
             },
-            coverLetter: { type: Type.STRING },
-            analysis: {
-              type: Type.OBJECT,
-              properties: {
-                matchScore: { type: Type.NUMBER },
-                matchedKeywords: { type: Type.ARRAY, items: { type: Type.STRING } },
-                missingKeywords: { type: Type.ARRAY, items: { type: Type.STRING } },
-                keyImprovements: { type: Type.STRING },
-              },
-              required: ["matchScore", "matchedKeywords", "missingKeywords", "keyImprovements"]
-            }
+            required: ["tailoredResume", "coverLetter", "analysis"]
           },
-          required: ["tailoredResume", "coverLetter", "analysis"]
-        },
-      }
-    });
+        }
+      })
+    );
 
     const result = JSON.parse(response.text);
     res.json(result);
   } catch (error: any) {
     console.error("Gemini Error:", error);
-    if (error.status === 503 || error.message?.includes("503") || error.message?.includes("demand")) {
-      return res.status(503).json({ error: "AI service is currently at capacity. Please wait 10 seconds and try again." });
+    const is503 =
+      error?.status === 503 ||
+      error?.message?.includes("503") ||
+      error?.message?.toLowerCase().includes("high demand") ||
+      error?.message?.toLowerCase().includes("unavailable");
+    if (is503) {
+      return res.status(503).json({ error: "AI service is currently at capacity after 3 attempts. Please wait a moment and try again." });
     }
     res.status(500).json({ error: error.message });
   }

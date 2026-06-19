@@ -7,16 +7,13 @@ import {
   StyleSheet,
   Link,
 } from '@react-pdf/renderer';
-import type { TailoredResume } from './ResumeBuilder';
+import type { TailoredResume } from '../types/resume';
 
 const styles = StyleSheet.create({
   page: {
     fontFamily: 'Helvetica',
     backgroundColor: '#FFFFFF',
-    paddingTop: 36,
-    paddingBottom: 44,
-    paddingRight: 24,
-    // Left padding is handled by mainContent's marginLeft to keep sidebar full bleed
+    // Padding moved to columns so absolute background spans physical page perfectly
     display: 'flex',
     flexDirection: 'row',
   },
@@ -26,32 +23,30 @@ const styles = StyleSheet.create({
     left: 0,
     top: 0,
     bottom: 0,
-    height: '100%',
     width: '30%',
     backgroundColor: '#2E3544',
     borderLeftWidth: 10, // Leftmost vertical accent focus line
   },
-  // Sidebar content only on the first page
+  // Sidebar content allowing page breaks and matching padding
   sidebarContent: {
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    bottom: 0,
     width: '30%',
     color: '#FFFFFF',
     paddingTop: 36,
-    paddingBottom: 36,
+    paddingBottom: 44,
     paddingLeft: 16,
     paddingRight: 16,
     display: 'flex',
     flexDirection: 'column',
   },
-  // Main column perfectly cleared of sidebar on every page
+  // Main column properly offset in flex row
   mainContent: {
-    marginLeft: '33%',
+    width: '67%',
+    marginLeft: '3%', // Push to start at 33% (leaving a 3% gap matching original layout)
+    paddingTop: 36,
+    paddingBottom: 44,
+    paddingRight: 24,
     display: 'flex',
     flexDirection: 'column',
-    width: '67%',
   },
   
   // Sidebar Components
@@ -302,7 +297,7 @@ const styles = StyleSheet.create({
 
   footerContainer: {
     position: 'absolute',
-    bottom: 12,
+    bottom: 24,
     left: '33%',
     right: 24,
     display: 'flex',

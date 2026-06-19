@@ -1,4 +1,107 @@
-import React, { useState } from 'react';
+const fs = require('fs');
+
+const path = 'src/components/ResumeBuilder.tsx';
+const content = fs.readFileSync(path, 'utf8');
+
+const lines = content.split('\n');
+
+// Find the line index where `<section className="lg:col-span-7 space-y-6">` starts
+let rightColStartIndex = lines.findIndex(line => line.includes('{/* Right Column: Output Preview (Cols 6-12) */}'));
+if (rightColStartIndex === -1) {
+    rightColStartIndex = lines.findIndex(line => line.includes('<section className="lg:col-span-7 space-y-6">'));
+}
+
+if (rightColStartIndex === -1) {
+    console.error("Could not find right column start.");
+    process.exit(1);
+}
+
+// Find the end of the right column section. It ends before `</div>` and `</main>`
+let rightColEndIndex = lines.findIndex((line, idx) => idx > rightColStartIndex && line.trim() === '</div>' && lines[idx+1].trim() === '</main>');
+
+if (rightColEndIndex === -1) {
+    console.error("Could not find right column end.");
+    process.exit(1);
+}
+
+const previewPanelLines = lines.slice(rightColStartIndex, rightColEndIndex);
+
+const previewPanelCode = `import React from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { 
+  FileText, Briefcase, Wand2, Copy, Check, Download, 
+  AlertCircle, Loader2, Sparkles, User, Target, 
+  Mail, BarChart3, ChevronRight, Hash, XCircle, CheckCircle2, Upload,
+  MapPin, Phone, Globe, Linkedin, Github, Award, Languages, Palette, Layout, Type,
+  Edit, Save, X, Plus, Trash2
+} from 'lucide-react';
+import { ResumeData, WorkExperience, Education, SkillCategory } from '../../types/resume';
+import { COLOR_THEMES, FONT_PAIRS } from '../../constants/theme';
+import { formatResumeToMarkdown } from '../../utils/formatters';
+
+interface PreviewPanelProps {
+  data: ResumeData | null;
+  isGenerating: boolean;
+  activeTab: 'resume' | 'letter' | 'analysis';
+  setActiveTab: (val: 'resume' | 'letter' | 'analysis') => void;
+  currentTheme: any;
+  accentColor: string;
+  setAccentColor: (val: any) => void;
+  fontPair: string;
+  setFontPair: (val: any) => void;
+  layoutStyle: string;
+  setLayoutStyle: (val: any) => void;
+  isEditMode: boolean;
+  setIsEditMode: (val: boolean) => void;
+  editData: ResumeData | null;
+  setEditData: (val: ResumeData | null) => void;
+  handleSaveEdits: () => void;
+  handleCancelEdits: () => void;
+  handleEditClick: () => void;
+  handleCopy: () => void;
+  copied: boolean;
+  handleExportPDF: () => void;
+  isExporting: boolean;
+  updateEditData: (newData: ResumeData) => void;
+}
+
+export const PreviewPanel: React.FC<PreviewPanelProps> = ({
+  data,
+  isGenerating,
+  activeTab,
+  setActiveTab,
+  currentTheme,
+  accentColor,
+  setAccentColor,
+  fontPair,
+  setFontPair,
+  layoutStyle,
+  setLayoutStyle,
+  isEditMode,
+  setIsEditMode,
+  editData,
+  setEditData,
+  handleSaveEdits,
+  handleCancelEdits,
+  handleEditClick,
+  handleCopy,
+  copied,
+  handleExportPDF,
+  isExporting,
+  updateEditData
+}) => {
+  const currentFonts = FONT_PAIRS[fontPair as keyof typeof FONT_PAIRS];
+  return (
+    <>
+${previewPanelLines.join('\n')}
+    </>
+  );
+};
+`;
+
+fs.writeFileSync('src/components/ResumeBuilder/PreviewPanel.tsx', previewPanelCode);
+
+const newResumeBuilderTop = `import React, { useState } from 'react';
 import { Sparkles } from 'lucide-react';
 import { ResumeData } from '../types/resume';
 import { COLOR_THEMES, FONT_PAIRS } from '../constants/theme';
@@ -108,8 +211,8 @@ export default function ResumeBuilder() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto p-4 sm:p-6 md:p-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-10 items-start">
+      <main className="max-w-7xl mx-auto p-6 md:p-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
           
           <BuilderForm
             currentTheme={currentTheme}
@@ -149,51 +252,10 @@ export default function ResumeBuilder() {
             isExporting={isExporting}
             updateEditData={updateEditData}
           />
+`;
 
-        </div>
-      </main>
+const bottomLines = lines.slice(rightColEndIndex);
+const newResumeBuilderContent = newResumeBuilderTop + '\n' + bottomLines.join('\n');
 
-      <footer className="max-w-7xl mx-auto px-4 sm:px-12 py-8 sm:py-12 text-[#1A1A1A]/30 text-center space-y-4 print:hidden">
-        <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 text-[10px] uppercase font-bold tracking-[0.3em]">
-          <span>Security & Privacy First</span>
-          <span className="w-1.5 h-1.5 bg-indigo-600 rounded-full"></span>
-          <span>Zero Data Retention</span>
-          <span className="w-1.5 h-1.5 bg-indigo-600 rounded-full"></span>
-          <span>Open Standards</span>
-        </div>
-      </footer>
-
-      <style>{`
-        .break-inside-avoid {
-          break-inside: avoid !important;
-          page-break-inside: avoid !important;
-          -webkit-column-break-inside: avoid !important;
-        }
-
-        /* Print adjustments for exact color and formatting preservation */
-        @media print {
-          body {
-            background: white !important;
-            color: #0f172a !important;
-            font-size: 11pt !important;
-          }
-          header, section:first-of-type, .print\\:hidden, button, .customizer-panel {
-            display: none !important;
-          }
-          #resume-pdf-container {
-            width: 210mm !important;
-            min-height: 297mm !important;
-            box-shadow: none !important;
-            border: none !important;
-            margin: 0 !important;
-            padding: 0 !important;
-          }
-          * {
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-          }
-        }
-      `}</style>
-    </div>
-  );
-}
+fs.writeFileSync('src/components/ResumeBuilder.tsx', newResumeBuilderContent);
+console.log("Refactoring complete.");
