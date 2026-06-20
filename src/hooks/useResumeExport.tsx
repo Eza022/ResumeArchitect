@@ -9,7 +9,7 @@ export const useResumeExport = (
   activeTab: 'resume' | 'letter' | 'analysis',
   currentTheme: any,
   fontPair: string,
-  layoutStyle: string,
+  layoutStyle: 'split' | 'single',
   setError: (err: string | null) => void
 ) => {
   const [isExporting, setIsExporting] = useState(false);
