@@ -13,7 +13,8 @@ const styles = StyleSheet.create({
   page: {
     fontFamily: 'Helvetica',
     backgroundColor: '#FFFFFF',
-    // Padding moved to columns so absolute background spans physical page perfectly
+    paddingTop: 36,
+    paddingBottom: 44,
     display: 'flex',
     flexDirection: 'row',
   },
@@ -31,8 +32,6 @@ const styles = StyleSheet.create({
   sidebarContent: {
     width: '30%',
     color: '#FFFFFF',
-    paddingTop: 36,
-    paddingBottom: 44,
     paddingLeft: 16,
     paddingRight: 16,
     display: 'flex',
@@ -42,8 +41,6 @@ const styles = StyleSheet.create({
   mainContent: {
     width: '67%',
     marginLeft: '3%', // Push to start at 33% (leaving a 3% gap matching original layout)
-    paddingTop: 36,
-    paddingBottom: 44,
     paddingRight: 24,
     display: 'flex',
     flexDirection: 'column',
